@@ -1,87 +1,136 @@
 import os
+import base64
 import streamlit as st
+
 from PIL import Image
 from PyPDF2 import PdfReader
 
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import FAISS
-from langchain.llms import OpenAI
-from langchain.chains.question_answering import load_qa_chain
-
-import platform
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_community.vectorstores import FAISS
 
 
-# ==================================================
+# =========================================================
 # CONFIGURACIÓN
-# ==================================================
+# =========================================================
 
 st.set_page_config(
     page_title="SUPERZOO",
     page_icon="🐾",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 
-# ==================================================
+# =========================================================
 # ESTILOS
-# ==================================================
+# =========================================================
 
-st.markdown(
-    """
-    <style>
+st.markdown("""
+<style>
 
-    .main-title {
-        font-size: 48px;
-        font-weight: 800;
-        margin-bottom: 0px;
-    }
+.stApp {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 45%, #a5d6a7 100%);
+}
 
-    .subtitle {
-        font-size: 20px;
-        color: #666666;
-        margin-bottom: 30px;
-    }
+.main {
+    background-color: transparent;
+}
 
-    .animal-card {
-        padding: 25px;
-        border-radius: 20px;
-        background-color: #f5f8f2;
-        border: 1px solid #dfe7d8;
-        margin-top: 20px;
-        margin-bottom: 25px;
-    }
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    max-width: 1200px;
+}
 
-    .answer-card {
-        padding: 25px;
-        border-radius: 20px;
-        background-color: #f8faf7;
-        border: 1px solid #dfe5da;
-        margin-top: 15px;
-    }
+/* HEADER */
 
-    .feature-card {
-        padding: 18px;
-        border-radius: 15px;
-        background-color: #ffffff;
-        border: 1px solid #eeeeee;
-        text-align: center;
-    }
+.super-header {
+    background: linear-gradient(135deg, #14532d, #166534, #15803d);
+    padding: 30px;
+    border-radius: 25px;
+    color: white;
+    text-align: center;
+    box-shadow: 0px 8px 25px rgba(0,0,0,0.15);
+    margin-bottom: 25px;
+}
 
-    .separator {
-        border-top: 1px solid #dddddd;
-        margin: 20px 0px;
-    }
+.super-header h1 {
+    font-size: 52px;
+    margin-bottom: 5px;
+    font-weight: 800;
+}
 
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+.super-header p {
+    font-size: 18px;
+    margin-top: 5px;
+}
+
+/* TARJETAS */
+
+.info-card {
+    background: rgba(255,255,255,0.85);
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid rgba(22,101,52,0.15);
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.08);
+    margin-bottom: 15px;
+}
+
+.info-card h3 {
+    color: #14532d;
+    margin-bottom: 8px;
+}
+
+/* BLOQUES */
+
+.block-card {
+    background: #f7fff8;
+    border-left: 6px solid #22c55e;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.block-title {
+    font-weight: bold;
+    color: #166534;
+    font-size: 17px;
+}
+
+/* CHAT */
+
+.question-card {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0px 5px 18px rgba(0,0,0,0.08);
+}
+
+.answer-card {
+    background: #f0fdf4;
+    border-left: 6px solid #16a34a;
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 15px;
+}
+
+/* BOTONES */
+
+.stButton > button {
+    border-radius: 12px;
+    font-weight: 700;
+    border: none;
+    min-height: 45px;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 
-# ==================================================
+# =========================================================
 # SESSION STATE
-# ==================================================
+# =========================================================
 
 if "knowledge_base" not in st.session_state:
     st.session_state.knowledge_base = None
@@ -89,443 +138,301 @@ if "knowledge_base" not in st.session_state:
 if "chunks" not in st.session_state:
     st.session_state.chunks = []
 
+if "chunk_info" not in st.session_state:
+    st.session_state.chunk_info = []
+
+if "file_name" not in st.session_state:
+    st.session_state.file_name = ""
+
+if "pages" not in st.session_state:
+    st.session_state.pages = 0
+
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-if "pdf_name" not in st.session_state:
-    st.session_state.pdf_name = None
-
-if "pdf_pages" not in st.session_state:
-    st.session_state.pdf_pages = 0
+if "last_image_result" not in st.session_state:
+    st.session_state.last_image_result = ""
 
 
-# ==================================================
+# =========================================================
+# HEADER
+# =========================================================
+
+st.markdown("""
+<div class="super-header">
+
+<h1>🐾 SUPERZOO 🦁</h1>
+
+<p>
+Tu experto virtual en animales, hábitats y comportamiento
+</p>
+
+<div style="font-size:32px; margin-top:12px;">
+🌿 🦜 🐘 🐍 🐼 🐯 🌱 🦋
+</div>
+
+</div>
+""", unsafe_allow_html=True)
+
+
+# =========================================================
 # SIDEBAR
-# ==================================================
+# =========================================================
 
 with st.sidebar:
 
-    st.header("🐾 SUPERZOO")
+    st.markdown("## 🌿 SUPERZOO")
 
     st.write(
-        "Tu experto virtual en animales."
+        "Carga información sobre animales y permite que "
+        "SUPERZOO la analice y responda tus preguntas."
     )
 
-    st.markdown(
-        '<div class="separator"></div>',
-        unsafe_allow_html=True
-    )
+    st.markdown("---")
 
-    st.subheader("⚙️ Configuración")
+    st.markdown("### 🔑 OpenAI API Key")
 
     api_key = st.text_input(
-        "Clave de OpenAI",
+        "Ingresa tu clave",
         type="password"
     )
 
-    st.markdown(
-        '<div class="separator"></div>',
-        unsafe_allow_html=True
-    )
+    if api_key:
+        os.environ["OPENAI_API_KEY"] = api_key
 
-    st.markdown(
-        """
-        ### ¿Cómo funciona?
+    st.markdown("---")
 
-        📄 **1. Carga**  
-        Sube información sobre un animal.
+    st.markdown("### 🐾 Áreas de conocimiento")
 
-        🔎 **2. Analiza**  
-        SUPERZOO procesa el documento.
-
-        💬 **3. Pregunta**  
-        Haz preguntas sobre el animal.
-
-        🧠 **4. Responde**  
-        SUPERZOO recupera información
-        relevante y genera una respuesta.
-        """
-    )
-
-    st.markdown(
-        '<div class="separator"></div>',
-        unsafe_allow_html=True
-    )
-
-    if st.button(
-        "🗑️ Nuevo animal",
-        use_container_width=True
-    ):
-
-        st.session_state.knowledge_base = None
-        st.session_state.chunks = []
-        st.session_state.chat_history = []
-        st.session_state.pdf_name = None
-        st.session_state.pdf_pages = 0
-
-        st.rerun()
+    st.write("🧬 Características")
+    st.write("🌎 Hábitat")
+    st.write("🍖 Alimentación")
+    st.write("🐾 Comportamiento")
+    st.write("🧡 Conservación")
 
 
-# ==================================================
-# HEADER
-# ==================================================
-
-st.markdown(
-    '<div class="main-title">🐾 SUPERZOO</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    '<div class="subtitle">'
-    'Tu experto virtual en animales'
-    '</div>',
-    unsafe_allow_html=True
-)
-
-
-# ==================================================
-# INTRODUCCIÓN
-# ==================================================
-
-if st.session_state.knowledge_base is None:
-
-    st.info(
-        "🔬 SUPERZOO analiza documentos sobre "
-        "animales y responde tus preguntas "
-        "utilizando la información recuperada."
-    )
-
-
-# ==================================================
-# IMAGEN
-# ==================================================
-
-try:
-
-    image = Image.open("Chat_pdf.png")
-
-    st.image(
-        image,
-        width=250
-    )
-
-except Exception:
-
-    pass
-
-
-# ==================================================
-# API KEY
-# ==================================================
+# =========================================================
+# VERIFICACIÓN API
+# =========================================================
 
 if not api_key:
 
-    st.warning(
-        "🔑 Ingresa tu clave de OpenAI "
-        "en el panel lateral para comenzar."
+    st.info(
+        "🔑 Ingresa tu API Key en el panel izquierdo para comenzar."
     )
 
+    st.stop()
 
-# ==================================================
+
+# =========================================================
 # CARGAR PDF
-# ==================================================
+# =========================================================
 
-pdf = st.file_uploader(
-    "📄 Carga información sobre un animal",
+st.markdown("## 📚 Base de conocimiento")
+
+uploaded_pdf = st.file_uploader(
+    "Carga un documento PDF sobre animales",
     type=["pdf"]
 )
 
 
-# ==================================================
-# PROCESAR PDF
-# ==================================================
+if uploaded_pdf is not None:
 
-if pdf is not None and api_key:
-
-    os.environ["OPENAI_API_KEY"] = api_key
-
-    if st.session_state.pdf_name != pdf.name:
+    # Evitar reprocesar el mismo archivo constantemente
+    if st.session_state.file_name != uploaded_pdf.name:
 
         try:
 
-            with st.spinner(
-                "🔬 SUPERZOO está analizando el documento..."
-            ):
+            with st.spinner("🧠 SUPERZOO está leyendo el documento..."):
 
-                pdf_reader = PdfReader(pdf)
+                pdf_reader = PdfReader(uploaded_pdf)
 
-                total_pages = len(
-                    pdf_reader.pages
+                full_text = ""
+
+                page_texts = []
+
+                for page_number, page in enumerate(pdf_reader.pages, start=1):
+
+                    page_text = page.extract_text() or ""
+
+                    page_texts.append(page_text)
+
+                    full_text += (
+                        f"\n\n[PÁGINA {page_number}]\n"
+                        f"{page_text}"
+                    )
+
+                # -------------------------------------------------
+                # DIVISIÓN EN BLOQUES
+                # -------------------------------------------------
+
+                text_splitter = CharacterTextSplitter(
+                    separator="\n",
+                    chunk_size=700,
+                    chunk_overlap=100,
+                    length_function=len
                 )
 
-                all_chunks = []
+                chunks = text_splitter.split_text(full_text)
 
-                for page_number, page in enumerate(
-                    pdf_reader.pages,
-                    start=1
-                ):
-
-                    page_text = page.extract_text()
-
-                    if not page_text:
-                        continue
-
-                    text_splitter = CharacterTextSplitter(
-                        separator="\n",
-                        chunk_size=500,
-                        chunk_overlap=50,
-                        length_function=len
-                    )
-
-                    page_chunks = (
-                        text_splitter.split_text(
-                            page_text
-                        )
-                    )
-
-                    for chunk in page_chunks:
-
-                        all_chunks.append(
-                            {
-                                "text": chunk,
-                                "page": page_number
-                            }
-                        )
-
-
+                # -------------------------------------------------
                 # EMBEDDINGS
+                # -------------------------------------------------
 
-                embeddings = OpenAIEmbeddings()
-
-                texts = [
-                    chunk["text"]
-                    for chunk in all_chunks
-                ]
-
-                metadatas = [
-                    {
-                        "page": chunk["page"]
-                    }
-                    for chunk in all_chunks
-                ]
-
-
-                # BASE VECTORIAL
+                embeddings = OpenAIEmbeddings(
+                    model="text-embedding-3-small"
+                )
 
                 knowledge_base = FAISS.from_texts(
-                    texts,
-                    embeddings,
-                    metadatas=metadatas
+                    chunks,
+                    embeddings
                 )
 
+                # -------------------------------------------------
+                # GUARDAR INFORMACIÓN
+                # -------------------------------------------------
 
-                # GUARDAR
+                st.session_state.knowledge_base = knowledge_base
+                st.session_state.chunks = chunks
+                st.session_state.file_name = uploaded_pdf.name
+                st.session_state.pages = len(pdf_reader.pages)
 
-                st.session_state.knowledge_base = (
-                    knowledge_base
+                # Crear resumen visual de cada bloque
+                chunk_info = []
+
+                for i, chunk in enumerate(chunks):
+
+                    clean_chunk = chunk.replace(
+                        "\n",
+                        " "
+                    ).strip()
+
+                    if len(clean_chunk) > 220:
+                        preview = clean_chunk[:220] + "..."
+                    else:
+                        preview = clean_chunk
+
+                    chunk_info.append({
+                        "numero": i + 1,
+                        "texto": preview
+                    })
+
+                st.session_state.chunk_info = chunk_info
+
+                st.success(
+                    "✅ Documento procesado correctamente."
                 )
-
-                st.session_state.chunks = (
-                    all_chunks
-                )
-
-                st.session_state.pdf_name = (
-                    pdf.name
-                )
-
-                st.session_state.pdf_pages = (
-                    total_pages
-                )
-
-                st.session_state.chat_history = []
-
-
-            st.success(
-                "🐾 SUPERZOO terminó de analizar "
-                "el documento."
-            )
-
 
         except Exception as e:
 
             st.error(
-                f"❌ No se pudo analizar el documento: {e}"
+                f"❌ No se pudo procesar el PDF: {str(e)}"
             )
 
+    # =========================================================
+    # INFORMACIÓN DEL DOCUMENTO
+    # =========================================================
 
-# ==================================================
-# DOCUMENTO CARGADO
-# ==================================================
+    st.markdown("### 📄 Información del documento")
 
-if st.session_state.knowledge_base is not None:
-
-    st.markdown(
-        f"""
-        <div class="animal-card">
-
-        <h2>🐾 Animal analizado</h2>
-
-        <h3>
-        {st.session_state.pdf_name}
-        </h3>
-
-        <p>
-        📑 {st.session_state.pdf_pages} páginas
-        &nbsp;&nbsp;|&nbsp;&nbsp;
-        🧩 {len(st.session_state.chunks)} fragmentos
-        </p>
-
-        <p>
-        🧠 SUPERZOO está listo para responder
-        preguntas sobre este documento.
-        </p>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-    # ==================================================
-    # ÁREAS DE CONOCIMIENTO
-    # ==================================================
-
-    st.subheader(
-        "🔬 ¿Qué puedes preguntarle a SUPERZOO?"
-    )
-
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
-
-        st.markdown(
-            """
-            <div class="feature-card">
-            🧬
-            <br><br>
-            <b>Características</b>
-            </div>
-            """,
-            unsafe_allow_html=True
+        st.metric(
+            "📄 Páginas",
+            st.session_state.pages
         )
 
     with col2:
-
-        st.markdown(
-            """
-            <div class="feature-card">
-            🌎
-            <br><br>
-            <b>Hábitat</b>
-            </div>
-            """,
-            unsafe_allow_html=True
+        st.metric(
+            "🧩 Bloques",
+            len(st.session_state.chunks)
         )
 
     with col3:
-
-        st.markdown(
-            """
-            <div class="feature-card">
-            🍖
-            <br><br>
-            <b>Alimentación</b>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with col4:
-
-        st.markdown(
-            """
-            <div class="feature-card">
-            🐾
-            <br><br>
-            <b>Comportamiento</b>
-            </div>
-            """,
-            unsafe_allow_html=True
+        st.metric(
+            "📚 Fuente",
+            "PDF"
         )
 
 
-    st.markdown(
-        '<div class="separator"></div>',
-        unsafe_allow_html=True
-    )
+    # =========================================================
+    # INFORMACIÓN DE LOS BLOQUES
+    # =========================================================
 
-
-    # ==================================================
-    # HISTORIAL
-    # ==================================================
-
-    if st.session_state.chat_history:
-
-        st.subheader(
-            "💬 Conversación con SUPERZOO"
-        )
-
-        for item in st.session_state.chat_history:
-
-            with st.chat_message("user"):
-
-                st.write(
-                    item["question"]
-                )
-
-            with st.chat_message("assistant"):
-
-                st.write(
-                    item["answer"]
-                )
-
-                with st.expander(
-                    "📚 Información utilizada"
-                ):
-
-                    for source in item["sources"]:
-
-                        st.markdown(
-                            f"""
-                            **Página {source["page"]}**
-
-                            {source["text"]}
-                            """
-                        )
-
-
-    # ==================================================
-    # PREGUNTA
-    # ==================================================
-
-    st.subheader(
-        "💬 Pregúntale a SUPERZOO"
-    )
-
-    user_question = st.text_area(
-        "¿Qué quieres saber?",
-        placeholder=(
-            "Ejemplo: ¿Dónde vive este animal "
-            "y de qué se alimenta?"
-        ),
-        height=100
-    )
-
-
-    # ==================================================
-    # BOTÓN
-    # ==================================================
-
-    if st.button(
-        "🔎 Preguntar a SUPERZOO",
-        type="primary",
-        use_container_width=True
+    with st.expander(
+        "🔎 Ver qué información contiene cada bloque",
+        expanded=False
     ):
+
+        st.write(
+            "Estos son los fragmentos en los que SUPERZOO "
+            "dividió el documento para poder recuperar "
+            "información relevante."
+        )
+
+        for info in st.session_state.chunk_info:
+
+            st.markdown(
+                f"""
+                <div class="block-card">
+
+                <div class="block-title">
+                🧩 Bloque {info["numero"]}
+                </div>
+
+                <div style="margin-top:8px;">
+                {info["texto"]}
+                </div>
+
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+
+# =========================================================
+# PREGUNTAS AL DOCUMENTO
+# =========================================================
+
+if st.session_state.knowledge_base is not None:
+
+    st.markdown("---")
+
+    st.markdown("""
+    <div class="question-card">
+
+    <h2>🧠 Pregúntale a SUPERZOO</h2>
+
+    <p>
+    Haz preguntas sobre los animales presentes en el documento.
+    </p>
+
+    </div>
+    """, unsafe_allow_html=True)
+
+    with st.form("question_form"):
+
+        user_question = st.text_area(
+            "💬 Tu pregunta",
+            placeholder=(
+                "Ejemplo: ¿Dónde vive este animal y "
+                "de qué se alimenta?"
+            ),
+            height=100
+        )
+
+        send_question = st.form_submit_button(
+            "📨 Enviar pregunta",
+            use_container_width=True
+        )
+
+    if send_question:
 
         if not user_question.strip():
 
             st.warning(
-                "Escribe una pregunta primero."
+                "✏️ Escribe una pregunta antes de enviarla."
             )
 
         else:
@@ -533,163 +440,324 @@ if st.session_state.knowledge_base is not None:
             try:
 
                 with st.spinner(
-                    "🧠 SUPERZOO está buscando "
-                    "la información..."
+                    "🧠 SUPERZOO está buscando información..."
                 ):
 
-                    # BUSCAR INFORMACIÓN
+                    # ---------------------------------------------
+                    # RETRIEVAL
+                    # ---------------------------------------------
 
-                    docs = (
-                        st.session_state
-                        .knowledge_base
-                        .similarity_search(
-                            user_question,
-                            k=4
-                        )
+                    docs = st.session_state.knowledge_base.similarity_search(
+                        user_question,
+                        k=4
                     )
 
+                    retrieved_text = "\n\n".join(
+                        [
+                            doc.page_content
+                            for doc in docs
+                        ]
+                    )
 
+                    # ---------------------------------------------
                     # MODELO
+                    # ---------------------------------------------
 
-                    llm = OpenAI(
-                        temperature=0,
-                        model_name="gpt-4o-mini"
+                    llm = ChatOpenAI(
+                        model="gpt-5.6-luna",
+                        temperature=0
                     )
 
+                    prompt = f"""
+Eres SUPERZOO, un experto virtual especializado
+en zoología, animales, biodiversidad y conservación.
 
-                    # PROMPT
+Tu objetivo es responder preguntas utilizando
+PRINCIPALMENTE la información recuperada del documento.
 
-                    expert_prompt = f"""
-                    Eres SUPERZOO, un experto virtual
-                    especializado en zoología y animales.
+REGLAS:
 
-                    Responde la pregunta utilizando
-                    la información recuperada del documento.
+1. No inventes información.
+2. Si la respuesta aparece en el documento,
+   utiliza esa información.
+3. Explica los conceptos científicos de forma clara.
+4. Puedes organizar la respuesta con listas cuando ayude.
+5. Si la información no aparece en el documento,
+   dilo claramente.
+6. No afirmes que un dato está en el documento
+   si realmente no aparece.
+7. Responde siempre en español.
+8. Mantén un tono de experto pero fácil de entender.
 
-                    Reglas:
+INFORMACIÓN RECUPERADA DEL DOCUMENTO:
 
-                    - Utiliza principalmente la información
-                      encontrada en el documento.
-                    - No inventes datos.
-                    - Explica conceptos científicos de
-                      manera clara.
-                    - Si la información solicitada no aparece
-                      en el documento, dilo claramente.
-                    - No presentes información inventada
-                      como si fuera un hecho.
-                    - Responde de manera clara y comprensible.
+{retrieved_text}
 
-                    Pregunta:
+PREGUNTA DEL USUARIO:
 
-                    {user_question}
-                    """
+{user_question}
 
+RESPUESTA DE SUPERZOO:
+"""
 
-                    # CADENA
+                    response = llm.invoke(prompt)
 
-                    chain = load_qa_chain(
-                        llm,
-                        chain_type="stuff"
-                    )
+                    answer = response.content
 
-
-                    # RESPUESTA
-
-                    response = chain.run(
-                        input_documents=docs,
-                        question=expert_prompt
-                    )
-
-
-                # FUENTES
-
-                sources = []
-
-                for doc in docs:
-
-                    sources.append(
-                        {
-                            "text": doc.page_content,
-                            "page": doc.metadata.get(
-                                "page",
-                                "desconocida"
-                            )
-                        }
-                    )
-
-
-                # HISTORIAL
-
-                st.session_state.chat_history.append(
-                    {
+                    st.session_state.chat_history.append({
                         "question": user_question,
-                        "answer": response,
-                        "sources": sources
-                    }
-                )
+                        "answer": answer
+                    })
 
+                    # ---------------------------------------------
+                    # RESPUESTA
+                    # ---------------------------------------------
 
-                # RESPUESTA
-
-                st.subheader(
-                    "🧠 SUPERZOO responde"
-                )
-
-                st.markdown(
-                    f"""
+                    st.markdown("""
                     <div class="answer-card">
 
-                    {response}
+                    <h3>🐾 SUPERZOO responde</h3>
 
                     </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                    """, unsafe_allow_html=True)
 
+                    st.markdown(answer)
 
-                # CONTEXTO
+                    # ---------------------------------------------
+                    # INFORMACIÓN UTILIZADA
+                    # ---------------------------------------------
 
-                with st.expander(
-                    "📚 Ver información utilizada"
-                ):
-
-                    for i, source in enumerate(
-                        sources,
-                        start=1
+                    with st.expander(
+                        "📚 Ver información utilizada para responder"
                     ):
 
-                        st.markdown(
-                            f"### Fragmento {i}"
-                        )
-
-                        st.markdown(
-                            f"**Página {source['page']}**"
-                        )
-
                         st.write(
-                            source["text"]
+                            "SUPERZOO recuperó estos fragmentos "
+                            "del documento para construir la respuesta:"
                         )
 
-                        st.markdown(
-                            '<div class="separator"></div>',
-                            unsafe_allow_html=True
-                        )
+                        for i, doc in enumerate(docs):
 
+                            st.markdown(
+                                f"""
+                                <div class="block-card">
+
+                                <div class="block-title">
+                                🔎 Información recuperada {i + 1}
+                                </div>
+
+                                <div style="margin-top:8px;">
+                                {doc.page_content}
+                                </div>
+
+                                </div>
+                                """,
+                                unsafe_allow_html=True
+                            )
 
             except Exception as e:
 
                 st.error(
-                    f"❌ SUPERZOO encontró un error: {e}"
+                    f"❌ Ocurrió un error al generar la respuesta: {str(e)}"
                 )
 
 
-# ==================================================
-# ESTADO INICIAL
-# ==================================================
+# =========================================================
+# HISTORIAL
+# =========================================================
 
-elif pdf is None and api_key:
+if st.session_state.chat_history:
 
-    st.info(
-        "📄 Carga un PDF para que SUPERZOO "
-        "pueda comenzar su análisis."
-    )
+    st.markdown("---")
+
+    st.markdown("## 💬 Historial de preguntas")
+
+    for item in reversed(
+        st.session_state.chat_history
+    ):
+
+        st.markdown(
+            f"""
+            <div class="info-card">
+
+            <strong>🧑 Pregunta:</strong>
+
+            <p>
+            {item["question"]}
+            </p>
+
+            <strong>🐾 SUPERZOO:</strong>
+
+            <p>
+            {item["answer"]}
+            </p>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+
+# =========================================================
+# ANÁLISIS DE IMÁGENES
+# =========================================================
+
+st.markdown("---")
+
+st.markdown("## 📷 Analiza un animal")
+
+st.write(
+    "Sube una fotografía y SUPERZOO analizará "
+    "lo que aparece en ella."
+)
+
+uploaded_image = st.file_uploader(
+    "Sube una imagen de un animal",
+    type=["jpg", "jpeg", "png"],
+    key="animal_image"
+)
+
+
+if uploaded_image:
+
+    col_img, col_text = st.columns([1, 1])
+
+    with col_img:
+
+        st.image(
+            uploaded_image,
+            caption=uploaded_image.name,
+            use_column_width=True
+        )
+
+    with col_text:
+
+        with st.form("image_form"):
+
+            image_question = st.text_area(
+                "🔎 ¿Qué quieres saber de la imagen?",
+                placeholder=(
+                    "Ejemplo: Describe sus características "
+                    "físicas y dime qué tipo de animal parece ser."
+                )
+            )
+
+            analyze_image = st.form_submit_button(
+                "🐾 Analizar imagen",
+                use_container_width=True
+            )
+
+        if analyze_image:
+
+            if not image_question.strip():
+
+                image_question = (
+                    "Identifica y describe el animal de la imagen. "
+                    "Explica sus características físicas, "
+                    "posible hábitat y comportamiento."
+                )
+
+            try:
+
+                with st.spinner(
+                    "🔬 SUPERZOO está analizando la imagen..."
+                ):
+
+                    image_bytes = uploaded_image.getvalue()
+
+                    base64_image = base64.b64encode(
+                        image_bytes
+                    ).decode("utf-8")
+
+                    client_prompt = f"""
+Eres SUPERZOO, un experto en animales.
+
+Analiza cuidadosamente la imagen.
+
+Pregunta del usuario:
+
+{image_question}
+
+Responde en español.
+
+Diferencia claramente entre:
+- lo que puedes observar directamente;
+- y lo que solamente puedes inferir.
+
+No inventes detalles que no puedan observarse.
+Si no puedes identificar con seguridad el animal,
+indica que la identificación es aproximada.
+"""
+
+                    # Cliente OpenAI moderno
+                    from openai import OpenAI
+
+                    client = OpenAI(
+                        api_key=api_key
+                    )
+
+                    result = client.responses.create(
+                        model="gpt-5.6-luna",
+                        input=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "input_text",
+                                        "text": client_prompt
+                                    },
+                                    {
+                                        "type": "input_image",
+                                        "image_url": (
+                                            f"data:image/jpeg;base64,"
+                                            f"{base64_image}"
+                                        )
+                                    }
+                                ]
+                            }
+                        ]
+                    )
+
+                    image_answer = result.output_text
+
+                    st.markdown("""
+                    <div class="answer-card">
+
+                    <h3>🦁 Análisis de SUPERZOO</h3>
+
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    st.markdown(image_answer)
+
+            except Exception as e:
+
+                st.error(
+                    f"❌ No se pudo analizar la imagen: {str(e)}"
+                )
+
+
+# =========================================================
+# FOOTER
+# =========================================================
+
+st.markdown("---")
+
+st.markdown(
+    """
+    <div style="text-align:center; padding:20px; color:#166534;">
+
+    🐾 <strong>SUPERZOO</strong> 🌿
+
+    <br>
+
+    Tu experto virtual en el mundo animal
+
+    <br><br>
+
+    🦁 🐘 🦜 🐍 🦋 🐼 🌱
+
+    </div>
+    """,
+    unsafe_allow_html=True
+)

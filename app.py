@@ -70,130 +70,6 @@ html, body, [class*="css"] {
     padding-bottom: 3rem;
 }
 
-/* ENCABEZADO */
-
-.hero {
-    background: linear-gradient(
-        125deg,
-        #034C47 0%,
-        #08736A 55%,
-        #15947A 100%
-    );
-    padding: 42px;
-    border-radius: 25px;
-    color: white;
-    margin-bottom: 32px;
-    box-shadow: 0 12px 30px rgba(3, 76, 71, 0.12);
-}
-
-.hero h1 {
-    font-size: 43px;
-    font-weight: 800;
-    color: white;
-    letter-spacing: -1.5px;
-    margin-bottom: 10px;
-}
-
-.hero p {
-    color: #E5F5DB;
-    font-size: 16px;
-    line-height: 1.8;
-    max-width: 680px;
-}
-
-.hero-tag {
-    display: inline-block;
-    background: #DDF18B;
-    color: #075B55;
-    padding: 9px 18px;
-    border-radius: 30px;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    margin-top: 12px;
-}
-
-/* TÍTULOS */
-
-.section-title {
-    color: #075B55;
-    font-size: 24px;
-    font-weight: 800;
-    letter-spacing: -0.8px;
-    margin-top: 22px;
-    margin-bottom: 12px;
-}
-
-/* TARJETAS */
-
-.info-card {
-    background: white;
-    border: 1px solid #E5EBDD;
-    border-radius: 19px;
-    padding: 23px;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 15px rgba(7,91,85,0.04);
-}
-
-.info-card h3 {
-    color: #075B55;
-    font-size: 17px;
-    font-weight: 800;
-}
-
-.info-card p {
-    color: #71817B;
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-/* PREGUNTAS */
-
-div[data-testid="stVerticalBlockBorderWrapper"] {
-    background: white;
-    border-radius: 17px;
-    border-color: #E2EBDD;
-}
-
-/* BOTONES */
-
-div.stButton > button {
-    background: #075B55;
-    color: white;
-    border: 1px solid #075B55;
-    border-radius: 30px;
-    padding: 12px 22px;
-    min-height: 47px;
-    font-family: 'Manrope', sans-serif;
-    font-weight: 700;
-    transition: all 0.25s ease;
-}
-
-div.stButton > button:hover {
-    background: #0C756A;
-    color: #DDF18B;
-    border-color: #0C756A;
-    transform: translateY(-2px);
-}
-
-/* BOTONES DE DESCARGA */
-
-div.stDownloadButton > button {
-    background: #DDF18B;
-    color: #075B55;
-    border: 1px solid #DDF18B;
-    border-radius: 30px;
-    min-height: 47px;
-    font-weight: 800;
-    font-family: 'Manrope', sans-serif;
-}
-
-div.stDownloadButton > button:hover {
-    background: #CBE879;
-    color: #075B55;
-    border-color: #CBE879;
-}
-
 /* BARRA LATERAL */
 
 section[data-testid="stSidebar"] {
@@ -216,6 +92,55 @@ section[data-testid="stSidebar"] h3 {
     font-weight: 800;
 }
 
+/* TÍTULOS */
+
+.section-title {
+    color: #075B55;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    margin-top: 22px;
+    margin-bottom: 12px;
+}
+
+/* BOTONES */
+
+div.stButton > button {
+    background: #075B55;
+    color: white;
+    border: 1px solid #075B55;
+    border-radius: 30px;
+    padding: 12px 22px;
+    min-height: 47px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    transition: all 0.25s ease;
+}
+
+div.stButton > button:hover {
+    background: #0C756A;
+    color: #DDF18B;
+    border-color: #0C756A;
+}
+
+/* DESCARGAS */
+
+div.stDownloadButton > button {
+    background: #DDF18B;
+    color: #075B55;
+    border: 1px solid #DDF18B;
+    border-radius: 30px;
+    min-height: 47px;
+    font-weight: 800;
+    font-family: 'Manrope', sans-serif;
+}
+
+div.stDownloadButton > button:hover {
+    background: #CBE879;
+    color: #075B55;
+    border-color: #CBE879;
+}
+
 /* CAMPOS */
 
 .stTextInput input,
@@ -229,11 +154,7 @@ section[data-testid="stSidebar"] h3 {
     border-radius: 12px;
 }
 
-.stSlider [data-baseweb="slider"] div[role="slider"] {
-    background: #075B55;
-}
-
-/* CARGA DE ARCHIVOS */
+/* ARCHIVOS */
 
 [data-testid="stFileUploader"] {
     background: white;
@@ -257,7 +178,13 @@ section[data-testid="stSidebar"] h3 {
     border: 1px solid #E5EBDD;
 }
 
-/* SEPARADORES */
+/* TARJETAS */
+
+div[data-testid="stVerticalBlockBorderWrapper"] {
+    background: white;
+    border-radius: 17px;
+    border-color: #E2EBDD;
+}
 
 hr {
     border-color: #DFE9D7;
@@ -270,71 +197,76 @@ footer {
 </style>
 """, unsafe_allow_html=True)
 
+
 # ==========================================================
-# 3. ENCABEZADO PRINCIPAL - CORREGIDO
+# 3. ENCABEZADO PRINCIPAL
 # ==========================================================
 
-st.markdown(
-    """
+st.html("""
+<div style="
+    background: linear-gradient(
+        125deg,
+        #034C47 0%,
+        #08736A 55%,
+        #15947A 100%
+    );
+    padding: 42px;
+    border-radius: 25px;
+    margin-bottom: 32px;
+    box-shadow: 0 12px 30px rgba(3,76,71,0.12);
+    font-family: 'Manrope', sans-serif;
+">
+
     <div style="
-        background: linear-gradient(125deg, #034C47 0%, #08736A 55%, #15947A 100%);
-        padding: 42px;
-        border-radius: 25px;
-        color: white;
-        margin-bottom: 32px;
-        box-shadow: 0 12px 30px rgba(3,76,71,0.12);
+        color: #DDF18B;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        margin-bottom: 15px;
     ">
-        <div style="
-            color: #DDF18B;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 3px;
-            margin-bottom: 15px;
-        ">
-            SMART EDUCATION PLATFORM
-        </div>
-
-        <h1 style="
-            font-family: 'Manrope', sans-serif;
-            font-size: 43px;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 10px;
-        ">
-            EvaluaPro.
-        </h1>
-
-        <p style="
-            color: #E5F5DB;
-            font-size: 16px;
-            line-height: 1.8;
-            max-width: 680px;
-        ">
-            Transforma tus materiales de clase en evaluaciones
-            inteligentes. Sube tus documentos, personaliza
-            tus preguntas y crea exámenes en segundos.
-        </p>
-
-        <div style="
-            display: inline-block;
-            background: #DDF18B;
-            color: #075B55;
-            padding: 9px 18px;
-            border-radius: 30px;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            margin-top: 12px;
-        ">
-            ✦ APRENDER · EVALUAR · MEJORAR
-        </div>
+        SMART EDUCATION PLATFORM
     </div>
-    """,
-    unsafe_allow_html=True
-)
+
+    <h1 style="
+        font-family: 'Manrope', sans-serif;
+        font-size: 43px;
+        font-weight: 800;
+        color: white;
+        margin: 0 0 12px 0;
+    ">
+        EvaluaPro.
+    </h1>
+
+    <p style="
+        color: #E5F5DB;
+        font-size: 16px;
+        line-height: 1.8;
+        max-width: 680px;
+    ">
+        Transforma tus materiales de clase en evaluaciones
+        inteligentes. Sube tus documentos, personaliza
+        tus preguntas y crea exámenes en segundos.
+    </p>
+
+    <div style="
+        display: inline-block;
+        background: #DDF18B;
+        color: #075B55;
+        padding: 9px 18px;
+        border-radius: 30px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+    ">
+        ✦ APRENDER · EVALUAR · MEJORAR
+    </div>
+
+</div>
+""")
+
 
 # ==========================================================
-# 4. CONFIGURACIÓN LATERAL
+# 4. BARRA LATERAL Y CONFIGURACIÓN
 # ==========================================================
 
 with st.sidebar:
@@ -356,7 +288,7 @@ with st.sidebar:
 
     st.caption(
         "La clave es necesaria para analizar documentos "
-        "y generar preguntas. No la compartas ni la publiques."
+        "y generar preguntas. No la publiques en GitHub."
     )
 
     if api_key:
@@ -407,13 +339,17 @@ with st.sidebar:
 
     st.divider()
 
-    st.markdown(
-        "<div style='text-align:center;color:#DDF18B;"
-        "font-size:11px;font-weight:700;'>"
-        "EVALUAPRO · EDUCACIÓN INTELIGENTE"
-        "</div>",
-        unsafe_allow_html=True
-    )
+    st.html("""
+    <div style="
+        text-align:center;
+        color:#DDF18B;
+        font-size:11px;
+        font-weight:700;
+        padding:10px;
+    ">
+        EVALUAPRO · EDUCACIÓN INTELIGENTE
+    </div>
+    """)
 
 
 # ==========================================================
@@ -434,8 +370,90 @@ if "configuracion" not in st.session_state:
 
 
 # ==========================================================
-# 6. CARGA DEL DOCUMENTO
+# 6. TARJETAS INFORMATIVAS
 # ==========================================================
+
+st.markdown(
+    '<div class="section-title">✦ Bienvenido a EvaluaPro</div>',
+    unsafe_allow_html=True
+)
+
+st.write(
+    "Una herramienta inteligente que transforma tus documentos "
+    "educativos en evaluaciones listas para utilizar."
+)
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.html("""
+    <div style="
+        background:white;
+        border:1px solid #E5EBDD;
+        border-radius:19px;
+        padding:23px;
+        min-height:165px;
+        box-shadow:0 4px 15px rgba(7,91,85,0.04);
+    ">
+        <div style="font-size:30px;">📄</div>
+        <h3 style="color:#075B55;font-size:17px;">
+            Material de clase
+        </h3>
+        <p style="color:#71817B;font-size:13px;line-height:1.6;">
+            Analiza tus documentos y utiliza su contenido
+            como fuente de conocimiento.
+        </p>
+    </div>
+    """)
+
+with col2:
+    st.html("""
+    <div style="
+        background:white;
+        border:1px solid #E5EBDD;
+        border-radius:19px;
+        padding:23px;
+        min-height:165px;
+        box-shadow:0 4px 15px rgba(7,91,85,0.04);
+    ">
+        <div style="font-size:30px;">🧠</div>
+        <h3 style="color:#075B55;font-size:17px;">
+            Inteligencia artificial
+        </h3>
+        <p style="color:#71817B;font-size:13px;line-height:1.6;">
+            Genera preguntas educativas adaptadas
+            al nivel de dificultad seleccionado.
+        </p>
+    </div>
+    """)
+
+with col3:
+    st.html("""
+    <div style="
+        background:white;
+        border:1px solid #E5EBDD;
+        border-radius:19px;
+        padding:23px;
+        min-height:165px;
+        box-shadow:0 4px 15px rgba(7,91,85,0.04);
+    ">
+        <div style="font-size:30px;">📥</div>
+        <h3 style="color:#075B55;font-size:17px;">
+            Exámenes descargables
+        </h3>
+        <p style="color:#71817B;font-size:13px;line-height:1.6;">
+            Descarga evaluaciones listas para
+            utilizar con tus estudiantes.
+        </p>
+    </div>
+    """)
+
+
+# ==========================================================
+# 7. CARGA DEL PDF
+# ==========================================================
+
+st.markdown("---")
 
 st.markdown(
     '<div class="section-title">📄 Carga tu material de clase</div>',
@@ -453,52 +471,6 @@ pdf = st.file_uploader(
     type=["pdf"],
     help="El documento debe contener texto seleccionable."
 )
-
-
-# ==========================================================
-# 7. TARJETAS INFORMATIVAS
-# ==========================================================
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-
-    st.markdown("""
-    <div class="info-card">
-        <div style="font-size:30px;">📄</div>
-        <h3>Material de clase</h3>
-        <p>
-        Analiza tus documentos y utiliza
-        su contenido como fuente de conocimiento.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-
-    st.markdown("""
-    <div class="info-card">
-        <div style="font-size:30px;">🧠</div>
-        <h3>Inteligencia artificial</h3>
-        <p>
-        Genera preguntas educativas adaptadas
-        al nivel de dificultad seleccionado.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-
-    st.markdown("""
-    <div class="info-card">
-        <div style="font-size:30px;">📥</div>
-        <h3>Exámenes descargables</h3>
-        <p>
-        Descarga evaluaciones listas para
-        utilizar con tus estudiantes.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
 
 
 # ==========================================================
@@ -561,7 +533,7 @@ def crear_base_conocimiento(texto, api_key):
 
 
 # ==========================================================
-# 10. GENERAR EVALUACIÓN CON INTELIGENCIA ARTIFICIAL
+# 10. GENERAR EVALUACIÓN CON IA
 # ==========================================================
 
 def generar_evaluacion(
@@ -587,26 +559,19 @@ def generar_evaluacion(
     if tipo == "Opción múltiple":
 
         formato = """
-Cada pregunta debe tener cuatro opciones:
-A, B, C y D.
-
+Cada pregunta debe tener cuatro opciones: A, B, C y D.
 Debe existir una sola respuesta correcta.
 La respuesta debe ser una de las letras A, B, C o D.
 """
 
-        ejemplo = """
-{
-  "numero": 1,
-  "pregunta": "Texto de la pregunta",
-  "opciones": {
+        formato_ejemplo = """
+"opciones": {
     "A": "Primera opción",
     "B": "Segunda opción",
     "C": "Tercera opción",
     "D": "Cuarta opción"
-  },
-  "respuesta": "A",
-  "explicacion": "Explicación de la respuesta correcta"
-}
+},
+"respuesta": "A"
 """
 
     elif tipo == "Verdadero o falso":
@@ -614,78 +579,67 @@ La respuesta debe ser una de las letras A, B, C o D.
         formato = """
 Cada pregunta debe ser una afirmación que pueda
 clasificarse como Verdadero o Falso.
-
 La respuesta debe ser A para Verdadero o B para Falso.
 """
 
-        ejemplo = """
-{
-  "numero": 1,
-  "pregunta": "Texto de la afirmación",
-  "opciones": {
+        formato_ejemplo = """
+"opciones": {
     "A": "Verdadero",
     "B": "Falso"
-  },
-  "respuesta": "A",
-  "explicacion": "Explicación de la respuesta"
-}
+},
+"respuesta": "A"
 """
 
     else:
 
         formato = """
-Cada pregunta debe ser abierta y permitir que el
-estudiante responda con sus propias palabras.
-
+Cada pregunta debe ser abierta y permitir que el estudiante
+responda con sus propias palabras.
 Incluye una respuesta esperada y criterios básicos
 para valorar la respuesta.
 """
 
-        ejemplo = """
-{
-  "numero": 1,
-  "pregunta": "Texto de la pregunta",
-  "opciones": {},
-  "respuesta": "Respuesta esperada",
-  "explicacion": "Criterios para evaluar la respuesta"
-}
+        formato_ejemplo = """
+"opciones": {},
+"respuesta": "Respuesta esperada"
 """
 
     instrucciones = f"""
 Eres un experto en pedagogía y diseño de evaluaciones.
 
-Tu tarea es crear un examen educativo a partir
-del documento proporcionado.
+Crea un examen educativo a partir del documento.
 
 REGLAS:
 
 1. Genera exactamente {numero_preguntas} preguntas.
-2. Nivel de dificultad: {dificultad}.
-3. Tipo de evaluación: {tipo}.
-4. Utiliza únicamente la información del documento.
+2. Dificultad: {dificultad}.
+3. Modalidad: {tipo}.
+4. Utiliza únicamente información del documento.
 5. No inventes datos ni conceptos.
 6. Evita repetir preguntas.
-7. Las preguntas deben ser claras y comprensibles.
+7. Las preguntas deben ser claras.
 8. Las respuestas deben estar respaldadas por el documento.
-9. Responde exclusivamente con JSON válido.
-10. No incluyas bloques Markdown.
-11. No incluyas explicaciones fuera del JSON.
+9. Devuelve exclusivamente JSON válido.
+10. No utilices bloques Markdown.
 
-FORMATO:
+FORMATO DE CADA PREGUNTA:
+
+{{
+    "numero": 1,
+    "pregunta": "Texto de la pregunta",
+    {formato_ejemplo},
+    "explicacion": "Explicación de la respuesta"
+}}
+
+REGLAS ESPECÍFICAS:
 
 {formato}
-
-EJEMPLO DE UNA PREGUNTA:
-
-{ejemplo}
 
 ESTRUCTURA FINAL:
 
 {{
-  "titulo": "Evaluación de conocimientos",
-  "preguntas": [
-    ... preguntas aquí ...
-  ]
+    "titulo": "Evaluación de conocimientos",
+    "preguntas": []
 }}
 """
 
@@ -755,7 +709,7 @@ INSTRUCCIONES:
         raise ValueError(
             f"Se solicitaron {numero_preguntas} preguntas, "
             f"pero se generaron {len(preguntas)}. "
-            "Intenta generar nuevamente."
+            "Intenta nuevamente."
         )
 
     for i, pregunta in enumerate(preguntas, start=1):
@@ -772,12 +726,13 @@ INSTRUCCIONES:
         opciones = pregunta.get("opciones", {})
 
         if not isinstance(opciones, dict):
-            raise ValueError("Formato incorrecto de las opciones.")
+            raise ValueError("Formato incorrecto de opciones.")
 
         if tipo == "Opción múltiple":
 
             if not all(
-                k in opciones for k in ["A", "B", "C", "D"]
+                letra in opciones
+                for letra in ["A", "B", "C", "D"]
             ):
                 raise ValueError(
                     "Una pregunta no contiene cuatro opciones."
@@ -891,8 +846,8 @@ def crear_pdf(
 
     elementos.append(
         Paragraph(
-            f"Material de referencia: "
-            f"{html.escape(nombre_documento)}",
+            "Material de referencia: "
+            + html.escape(nombre_documento),
             estilo_subtitulo
         )
     )
@@ -1009,7 +964,7 @@ def crear_pdf(
 
 
 # ==========================================================
-# 12. VALIDAR DOCUMENTO Y CONFIGURACIÓN
+# 12. VALIDACIÓN DEL DOCUMENTO Y CONFIGURACIÓN
 # ==========================================================
 
 if pdf is not None:
@@ -1148,7 +1103,6 @@ else:
                 )
 
             st.session_state.evaluacion = resultado
-
             st.session_state.nombre_documento = pdf.name
 
             st.session_state.configuracion = {
@@ -1182,7 +1136,6 @@ if (
 ):
 
     evaluacion = st.session_state.evaluacion
-
     configuracion = st.session_state.configuracion
 
     st.markdown("---")
@@ -1231,21 +1184,18 @@ if (
 
                 for letra, opcion in opciones.items():
 
-                    st.write(
-                        f"**{letra}.** {opcion}"
-                    )
+                    st.write(f"**{letra}.** {opcion}")
 
             else:
 
-                st.markdown(
-                    "_Respuesta abierta_"
-                )
+                st.markdown("_Respuesta abierta_")
 
                 st.text_area(
                     "Espacio para responder",
                     key=f"respuesta_{pregunta['numero']}",
                     disabled=True
                 )
+
 
     # ======================================================
     # 16. DESCARGAR DOCUMENTOS
@@ -1297,8 +1247,9 @@ if (
             use_container_width=True
         )
 
+
     # ======================================================
-    # 17. RESPUESTAS DEL PROFESOR
+    # 17. CONSULTAR RESPUESTAS
     # ======================================================
 
     with st.expander("🔍 Consultar clave de respuestas"):
@@ -1319,6 +1270,7 @@ if (
             )
 
             st.divider()
+
 
     # ======================================================
     # 18. NUEVA EVALUACIÓN
@@ -1343,32 +1295,47 @@ if (
 
 st.markdown("---")
 
-st.markdown("""
+st.html("""
 <div style="
-    text-align:center;
-    padding:25px 10px;
-    color:#71817B;
+    text-align: center;
+    padding: 30px 10px;
+    color: #71817B;
+    font-family: 'Manrope', sans-serif;
 ">
 
     <div style="
-        font-size:19px;
-        font-weight:800;
-        color:#075B55;
-        margin-bottom:8px;
+        font-size: 22px;
+        font-weight: 800;
+        color: #075B55;
+        margin-bottom: 8px;
     ">
         EvaluaPro.
     </div>
 
-    <div style="font-size:12px;">
+    <div style="
+        font-size: 13px;
+        font-weight: 600;
+        color: #075B55;
+    ">
         Aprende · Evalúa · Mejora
     </div>
 
     <div style="
-        font-size:11px;
-        margin-top:12px;
+        font-size: 11px;
+        margin-top: 12px;
+        color: #71817B;
     ">
-        Plataforma inteligente para la creación de evaluaciones educativas.
+        Plataforma inteligente para la creación
+        de evaluaciones educativas.
     </div>
 
+    <div style="
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, #075B55, #DDF18B);
+        border-radius: 10px;
+        margin: 18px auto 0 auto;
+    "></div>
+
 </div>
-""", unsafe_allow_html=True)
+""")

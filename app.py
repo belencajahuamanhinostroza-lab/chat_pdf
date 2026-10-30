@@ -16,15 +16,12 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
 from reportlab.platypus import (
-    SimpleDocTemplate,
-    Paragraph,
-    Spacer,
-    HRFlowable
+    SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 )
 
 
 # ==========================================================
-# 1. CONFIGURACIÓN GENERAL
+# 1. CONFIGURACIÓN
 # ==========================================================
 
 st.set_page_config(
@@ -36,7 +33,7 @@ st.set_page_config(
 
 
 # ==========================================================
-# 2. DISEÑO VISUAL
+# 2. ESTILOS VISUALES
 # ==========================================================
 
 st.markdown("""
@@ -49,10 +46,8 @@ st.markdown("""
     --verde-profundo: #034C47;
     --verde-medio: #0B796C;
     --verde-lima: #DDF18B;
-    --verde-claro: #F4F7E9;
     --fondo: #F7F9F2;
     --texto: #173F3B;
-    --gris: #71817B;
 }
 
 html, body, [class*="css"] {
@@ -70,7 +65,9 @@ html, body, [class*="css"] {
     padding-bottom: 3rem;
 }
 
-/* BARRA LATERAL */
+/* --------------------------------------------------
+   BARRA LATERAL
+   -------------------------------------------------- */
 
 section[data-testid="stSidebar"] {
     background: linear-gradient(
@@ -85,17 +82,115 @@ section[data-testid="stSidebar"] * {
     font-family: 'Manrope', sans-serif;
 }
 
+/* Textos de la barra lateral en blanco */
+
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] .stMarkdown,
+section[data-testid="stSidebar"] .stCaption {
+    color: #FFFFFF !important;
+}
+
+/* Títulos en verde lima */
+
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3 {
-    color: #DDF18B;
+    color: #DDF18B !important;
     font-weight: 800;
 }
 
-/* TITULOS */
+/* --------------------------------------------------
+   BOTÓN PARA CONTRAER Y DESPLEGAR LA BARRA
+   -------------------------------------------------- */
+
+/* Mantener visible el botón de la barra lateral */
+
+section[data-testid="stSidebar"]
+button[data-testid="stSidebarCollapseButton"],
+button[data-testid="stSidebarExpandButton"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-color: #DDF18B !important;
+    color: #034C47 !important;
+    border: 2px solid #DDF18B !important;
+    border-radius: 10px !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+
+/* Icono del botón visible */
+
+section[data-testid="stSidebar"]
+button[data-testid="stSidebarCollapseButton"] svg,
+button[data-testid="stSidebarExpandButton"] svg {
+    color: #034C47 !important;
+    fill: none !important;
+    stroke: #034C47 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Ocultar texto del botón, conservar icono */
+
+section[data-testid="stSidebar"]
+button[data-testid="stSidebarCollapseButton"] span,
+button[data-testid="stSidebarExpandButton"] span {
+    display: none !important;
+}
+
+/* --------------------------------------------------
+   BARRA DE DESPLAZAMIENTO LATERAL
+   -------------------------------------------------- */
+
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    overflow-y: auto !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: #DDF18B #075B55 !important;
+}
+
+/* Chrome, Edge y Safari */
+
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar {
+    width: 10px !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar-track {
+    background: #034C47 !important;
+    border-radius: 10px;
+}
+
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar-thumb {
+    background: #DDF18B !important;
+    border-radius: 10px;
+    border: 2px solid #034C47;
+}
+
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar-thumb:hover {
+    background: #FFFFFF !important;
+}
+
+/* --------------------------------------------------
+   ÁREA PRINCIPAL
+   -------------------------------------------------- */
+
+/* Textos principales oscuros */
+
+.stApp [data-testid="stMain"] label,
+.stApp [data-testid="stMain"] p,
+.stApp [data-testid="stMain"] .stMarkdown {
+    color: #173F3B;
+}
+
+/* Títulos principales */
 
 .section-title {
-    color: #075B55;
+    color: #075B55 !important;
     font-size: 24px;
     font-weight: 800;
     letter-spacing: -0.8px;
@@ -103,17 +198,21 @@ section[data-testid="stSidebar"] h3 {
     margin-bottom: 12px;
 }
 
-/* CAMPOS DE TEXTO NEGROS */
+/* --------------------------------------------------
+   CAJAS PARA ESCRIBIR
+   -------------------------------------------------- */
 
 .stTextInput input,
 .stTextArea textarea,
 .stNumberInput input {
-    color: #111111 !important;
+    color: #222222 !important;
     background-color: #FFFFFF !important;
-    -webkit-text-fill-color: #111111 !important;
+    -webkit-text-fill-color: #222222 !important;
     font-weight: 600 !important;
     border-radius: 12px !important;
 }
+
+/* Texto de ejemplo dentro de las cajas */
 
 .stTextInput input::placeholder,
 .stTextArea textarea::placeholder {
@@ -121,37 +220,57 @@ section[data-testid="stSidebar"] h3 {
     -webkit-text-fill-color: #777777 !important;
 }
 
-/* CAMPOS DE LA BARRA LATERAL */
+/* Campo de clave API */
 
 section[data-testid="stSidebar"] .stTextInput input {
-    color: #111111 !important;
+    color: #222222 !important;
     background-color: #FFFFFF !important;
-    -webkit-text-fill-color: #111111 !important;
+    -webkit-text-fill-color: #222222 !important;
 }
 
-/* SELECTORES */
+/* --------------------------------------------------
+   QUITAR OJO DE LA CLAVE API
+   -------------------------------------------------- */
+
+/* Oculta únicamente el botón de mostrar/ocultar contraseña */
+
+section[data-testid="stSidebar"]
+[data-testid="stTextInput"] button {
+    display: none !important;
+}
+
+/* --------------------------------------------------
+   SELECTORES
+   -------------------------------------------------- */
 
 .stSelectbox div[data-baseweb="select"] {
-    background-color: white !important;
-    color: #111111 !important;
-    border-radius: 12px;
+    background-color: #FFFFFF !important;
+    border-radius: 12px !important;
 }
 
 .stSelectbox div[data-baseweb="select"] span {
-    color: #111111 !important;
+    color: #222222 !important;
 }
 
-/* SLIDERS */
+/* --------------------------------------------------
+   SLIDERS
+   -------------------------------------------------- */
 
-.stSlider p {
+section[data-testid="stSidebar"] [data-testid="stSlider"] label {
     color: #FFFFFF !important;
 }
 
-/* BOTONES */
+section[data-testid="stSidebar"] [data-testid="stSlider"] div {
+    color: #FFFFFF;
+}
+
+/* --------------------------------------------------
+   BOTONES
+   -------------------------------------------------- */
 
 div.stButton > button {
     background: #075B55;
-    color: white !important;
+    color: #FFFFFF !important;
     border: 1px solid #075B55;
     border-radius: 30px;
     padding: 12px 22px;
@@ -167,7 +286,9 @@ div.stButton > button:hover {
     border-color: #0C756A;
 }
 
-/* DESCARGAS */
+/* --------------------------------------------------
+   BOTONES DE DESCARGA
+   -------------------------------------------------- */
 
 div.stDownloadButton > button {
     background: #DDF18B;
@@ -185,36 +306,34 @@ div.stDownloadButton > button:hover {
     border-color: #CBE879;
 }
 
-/* CARGADOR PDF */
+/* --------------------------------------------------
+   CARGADOR PDF
+   -------------------------------------------------- */
 
 [data-testid="stFileUploader"] {
-    background: white;
+    background: #FFFFFF;
     border: 2px dashed #A6C68D;
     border-radius: 20px;
     padding: 20px;
 }
 
-/* MENSAJES */
+[data-testid="stFileUploader"] * {
+    color: #173F3B;
+}
+
+/* --------------------------------------------------
+   MENSAJES Y MÉTRICAS
+   -------------------------------------------------- */
 
 .stAlert {
     border-radius: 14px;
 }
 
-/* MÉTRICAS */
-
 [data-testid="stMetric"] {
-    background: white;
+    background: #FFFFFF;
     padding: 18px;
     border-radius: 16px;
     border: 1px solid #E5EBDD;
-}
-
-/* TARJETAS */
-
-div[data-testid="stVerticalBlockBorderWrapper"] {
-    background: white;
-    border-radius: 17px;
-    border-color: #E2EBDD;
 }
 
 hr {
@@ -297,13 +416,12 @@ st.html("""
 
 
 # ==========================================================
-# 4. BARRA LATERAL Y CONFIGURACIÓN
+# 4. BARRA LATERAL
 # ==========================================================
 
 with st.sidebar:
 
     st.markdown("## ✦ EvaluaPro")
-
     st.caption("Plataforma inteligente para profesores")
 
     st.divider()
@@ -314,10 +432,8 @@ with st.sidebar:
         "Clave API de OpenAI",
         type="password",
         placeholder="Introduce tu clave sk-...",
-        help="Necesitas una clave API válida para generar evaluaciones."
-    )
-
-    api_key = api_key.strip()
+        help="Introduce una clave API válida de OpenAI."
+    ).strip()
 
     if api_key:
 
@@ -417,7 +533,7 @@ if "configuracion" not in st.session_state:
 
 
 # ==========================================================
-# 6. CARGA DIRECTA DEL DOCUMENTO PDF
+# 6. CARGA DEL PDF
 # ==========================================================
 
 st.markdown(
@@ -431,13 +547,10 @@ st.write(
 )
 
 if api_key:
-
     st.success(
         "✓ Conexión preparada. Ya puedes seleccionar tu PDF."
     )
-
 else:
-
     st.warning(
         "🔑 Primero introduce tu clave API de OpenAI "
         "en el menú lateral."
@@ -497,7 +610,7 @@ def extraer_texto(pdf_bytes):
 
 
 # ==========================================================
-# 8. CREAR BASE DE CONOCIMIENTO RAG
+# 8. CREAR BASE DE CONOCIMIENTO
 # ==========================================================
 
 def crear_base_conocimiento(texto, api_key):
@@ -528,7 +641,7 @@ def crear_base_conocimiento(texto, api_key):
 
 
 # ==========================================================
-# 9. GENERAR EVALUACIÓN CON IA
+# 9. GENERAR EVALUACIÓN
 # ==========================================================
 
 def generar_evaluacion(
@@ -539,12 +652,10 @@ def generar_evaluacion(
     tipo
 ):
 
-    cantidad_fragmentos = base.index.ntotal
-
     docs = base.similarity_search(
         "Conceptos principales, definiciones, características, "
         "explicaciones, ejemplos y datos importantes del documento.",
-        k=min(15, cantidad_fragmentos)
+        k=min(15, base.index.ntotal)
     )
 
     contexto = "\n\n---\n\n".join(
@@ -556,10 +667,10 @@ def generar_evaluacion(
         formato = """
 Cada pregunta debe tener cuatro opciones: A, B, C y D.
 Debe existir una sola respuesta correcta.
-La respuesta debe ser una de las letras A, B, C o D.
+La respuesta debe ser A, B, C o D.
 """
 
-        formato_ejemplo = """
+        ejemplo_opciones = """
 "opciones": {
     "A": "Primera opción",
     "B": "Segunda opción",
@@ -577,7 +688,7 @@ clasificarse como Verdadero o Falso.
 La respuesta debe ser A para Verdadero o B para Falso.
 """
 
-        formato_ejemplo = """
+        ejemplo_opciones = """
 "opciones": {
     "A": "Verdadero",
     "B": "Falso"
@@ -590,11 +701,10 @@ La respuesta debe ser A para Verdadero o B para Falso.
         formato = """
 Cada pregunta debe ser abierta y permitir que el estudiante
 responda con sus propias palabras.
-Incluye una respuesta esperada y criterios básicos
-para valorar la respuesta.
+Incluye una respuesta esperada.
 """
 
-        formato_ejemplo = """
+        ejemplo_opciones = """
 "opciones": {},
 "respuesta": "Respuesta esperada"
 """
@@ -617,18 +727,18 @@ REGLAS:
 9. Devuelve exclusivamente JSON válido.
 10. No utilices bloques Markdown.
 
+REGLAS ESPECÍFICAS:
+
+{formato}
+
 FORMATO DE CADA PREGUNTA:
 
 {{
     "numero": 1,
     "pregunta": "Texto de la pregunta",
-    {formato_ejemplo},
+    {ejemplo_opciones},
     "explicacion": "Explicación de la respuesta"
 }}
-
-REGLAS ESPECÍFICAS:
-
-{formato}
 
 ESTRUCTURA FINAL:
 
@@ -757,7 +867,7 @@ INSTRUCCIONES:
 
 
 # ==========================================================
-# 10. CREAR DOCUMENTOS PDF
+# 10. CREAR PDF
 # ==========================================================
 
 def crear_pdf(
@@ -959,7 +1069,7 @@ def crear_pdf(
 
 
 # ==========================================================
-# 11. CONTROL DEL DOCUMENTO Y CONFIGURACIÓN
+# 11. CONTROL DEL DOCUMENTO
 # ==========================================================
 
 if pdf is not None:
@@ -988,7 +1098,7 @@ else:
 
 
 # ==========================================================
-# 12. GENERACIÓN DE LA EVALUACIÓN
+# 12. GENERAR EVALUACIÓN
 # ==========================================================
 
 st.markdown("---")
@@ -1137,7 +1247,6 @@ if (
             if opciones:
 
                 for letra, opcion in opciones.items():
-
                     st.write(f"**{letra}.** {opcion}")
 
             else:

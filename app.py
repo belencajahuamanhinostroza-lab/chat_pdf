@@ -270,8 +270,6 @@ footer {
 </style>
 """, unsafe_allow_html=True)
 
-
-
 # ==========================================================
 # 3. ENCABEZADO PRINCIPAL - CORREGIDO
 # ==========================================================
@@ -334,8 +332,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-
 
 # ==========================================================
 # 4. CONFIGURACIÓN LATERAL

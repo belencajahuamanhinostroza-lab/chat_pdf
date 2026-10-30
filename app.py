@@ -11,472 +11,487 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import FAISS
 
-from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.units import cm
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, HRFlowable
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    PageBreak,
+    KeepTogether
 )
 
 
-# ==========================================================
-# 1. CONFIGURACIÓN
-# ==========================================================
+# =========================================================
+# CONFIGURACIÓN GENERAL
+# =========================================================
 
 st.set_page_config(
-    page_title="EvaluaPro | Evaluaciones inteligentes",
-    page_icon="📝",
+    page_title="EvaluaPro",
+    page_icon="📘",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 
-# ==========================================================
-# 2. ESTILOS VISUALES
-# ==========================================================
+# =========================================================
+# ESTILOS CSS
+# =========================================================
 
 st.markdown("""
 <style>
 
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+/* -----------------------------------------------------
+   FUENTE Y FONDO GENERAL
+----------------------------------------------------- */
 
-:root {
-    --verde-oscuro: #075B55;
-    --verde-profundo: #034C47;
-    --verde-medio: #0B796C;
-    --verde-lima: #DDF18B;
-    --fondo: #F7F9F2;
-    --texto: #173F3B;
-}
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
 html, body, [class*="css"] {
     font-family: 'Manrope', sans-serif;
 }
 
 .stApp {
-    background-color: var(--fondo);
-    color: var(--texto);
+    background: #F7F9F2;
+}
+
+[data-testid="stAppViewContainer"] {
+    background: #F7F9F2;
 }
 
 .block-container {
-    max-width: 1200px;
     padding-top: 2rem;
     padding-bottom: 3rem;
+    max-width: 1200px;
 }
 
-/* --------------------------------------------------
+
+/* -----------------------------------------------------
    BARRA LATERAL
-   -------------------------------------------------- */
+----------------------------------------------------- */
 
 section[data-testid="stSidebar"] {
     background: linear-gradient(
         180deg,
         #034C47 0%,
-        #075B55 65%,
-        #08766A 100%
+        #075B55 55%,
+        #034C47 100%
     );
 }
 
 section[data-testid="stSidebar"] * {
-    font-family: 'Manrope', sans-serif;
+    color: #FFFFFF;
 }
-
-/* Textos de la barra lateral en blanco */
 
 section[data-testid="stSidebar"] label,
 section[data-testid="stSidebar"] p,
-section[data-testid="stSidebar"] .stMarkdown,
-section[data-testid="stSidebar"] .stCaption {
-    color: #FFFFFF !important;
-}
-
-/* Títulos en verde lima */
-
+section[data-testid="stSidebar"] span,
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3 {
-    color: #DDF18B !important;
-    font-weight: 800;
+    color: #FFFFFF;
 }
 
-/* --------------------------------------------------
-   BOTÓN PARA CONTRAER Y DESPLEGAR LA BARRA
-   -------------------------------------------------- */
+/* Inputs de la barra lateral */
 
-/* Mantener visible el botón de la barra lateral */
+section[data-testid="stSidebar"] input,
+section[data-testid="stSidebar"] textarea {
+    background-color: #FFFFFF !important;
+    color: #202020 !important;
+    border-radius: 9px !important;
+    border: 1px solid #D5DDD7 !important;
+}
+
+/* Texto escrito */
+
+section[data-testid="stSidebar"] input::placeholder,
+section[data-testid="stSidebar"] textarea::placeholder {
+    color: #777777 !important;
+    opacity: 1 !important;
+}
+
+/* Selectores */
+
+section[data-testid="stSidebar"] div[data-baseweb="select"] > div {
+    background-color: #FFFFFF !important;
+    color: #202020 !important;
+    border-radius: 9px !important;
+}
+
+section[data-testid="stSidebar"] div[data-baseweb="select"] span {
+    color: #202020 !important;
+}
+
+/* Slider */
+
+section[data-testid="stSidebar"] [data-testid="stSlider"] {
+    color: #DDF18B;
+}
+
+/* Mensajes de ayuda */
+
+section[data-testid="stSidebar"] [data-testid="stTooltipIcon"] {
+    color: #DDF18B !important;
+}
+
+
+/* -----------------------------------------------------
+   CORRECCIÓN BOTÓN MOSTRAR/OCULTAR API KEY
+----------------------------------------------------- */
+
+/* Oculta únicamente el botón de visibilidad del campo password */
 
 section[data-testid="stSidebar"]
-button[data-testid="stSidebarCollapseButton"],
+div[data-testid="stTextInput"]:has(input[type="password"]) button {
+    display: none !important;
+}
+
+
+/* -----------------------------------------------------
+   CORRECCIÓN BOTÓN DE CONTRAER / EXPANDIR SIDEBAR
+----------------------------------------------------- */
+
+/* Botón para cerrar la barra lateral cuando está abierta */
+
+section[data-testid="stSidebar"]
+button[data-testid="stSidebarCollapseButton"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-color: #DDF18B !important;
+    border: 1px solid #DDF18B !important;
+    border-radius: 9px !important;
+    width: 38px !important;
+    height: 38px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+}
+
+/* Botón para abrir la barra lateral cuando está cerrada */
+
 button[data-testid="stSidebarExpandButton"] {
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
     background-color: #DDF18B !important;
-    color: #034C47 !important;
-    border: 2px solid #DDF18B !important;
-    border-radius: 10px !important;
+    border: 1px solid #DDF18B !important;
+    border-radius: 9px !important;
     width: 38px !important;
     height: 38px !important;
-    min-width: 38px !important;
     align-items: center !important;
     justify-content: center !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    cursor: pointer !important;
 }
 
-/* Icono del botón visible */
+/* Mantener visibles los iconos SVG */
 
 section[data-testid="stSidebar"]
 button[data-testid="stSidebarCollapseButton"] svg,
 button[data-testid="stSidebarExpandButton"] svg {
-    color: #034C47 !important;
-    fill: none !important;
-    stroke: #034C47 !important;
-    opacity: 1 !important;
+    display: block !important;
     visibility: visible !important;
+    opacity: 1 !important;
+    width: 20px !important;
+    height: 20px !important;
+    color: #034C47 !important;
+    stroke: #034C47 !important;
 }
 
-/* Ocultar texto del botón, conservar icono */
+/* No ocultar los elementos internos que contienen el icono */
 
 section[data-testid="stSidebar"]
 button[data-testid="stSidebarCollapseButton"] span,
 button[data-testid="stSidebarExpandButton"] span {
-    display: none !important;
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
-/* --------------------------------------------------
-   BARRA DE DESPLAZAMIENTO LATERAL
-   -------------------------------------------------- */
+/* Hover de los botones */
+
+section[data-testid="stSidebar"]
+button[data-testid="stSidebarCollapseButton"]:hover,
+button[data-testid="stSidebarExpandButton"]:hover {
+    background-color: #FFFFFF !important;
+    border-color: #DDF18B !important;
+}
+
+
+/* -----------------------------------------------------
+   SCROLLBAR DE LA BARRA LATERAL
+----------------------------------------------------- */
 
 section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-    overflow-y: auto !important;
-    scrollbar-width: thin !important;
-    scrollbar-color: #DDF18B #075B55 !important;
+    scrollbar-width: thin;
+    scrollbar-color: #DDF18B #034C47;
 }
 
-/* Chrome, Edge y Safari */
-
 section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar {
-    width: 10px !important;
+    width: 9px;
 }
 
 section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar-track {
-    background: #034C47 !important;
-    border-radius: 10px;
+    background: #034C47;
 }
 
 section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar-thumb {
-    background: #DDF18B !important;
+    background: #DDF18B;
     border-radius: 10px;
     border: 2px solid #034C47;
 }
 
-section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar-thumb:hover {
-    background: #FFFFFF !important;
+
+/* -----------------------------------------------------
+   CONTENIDO PRINCIPAL
+----------------------------------------------------- */
+
+.main .block-container {
+    color: #034C47;
 }
 
-/* --------------------------------------------------
-   ÁREA PRINCIPAL
-   -------------------------------------------------- */
-
-/* Textos principales oscuros */
-
-.stApp [data-testid="stMain"] label,
-.stApp [data-testid="stMain"] p,
-.stApp [data-testid="stMain"] .stMarkdown {
-    color: #173F3B;
+.main h1,
+.main h2,
+.main h3,
+.main p,
+.main label {
+    color: #034C47;
 }
 
-/* Títulos principales */
 
-.section-title {
-    color: #075B55 !important;
-    font-size: 24px;
-    font-weight: 800;
-    letter-spacing: -0.8px;
-    margin-top: 22px;
-    margin-bottom: 12px;
-}
-
-/* --------------------------------------------------
-   CAJAS PARA ESCRIBIR
-   -------------------------------------------------- */
-
-.stTextInput input,
-.stTextArea textarea,
-.stNumberInput input {
-    color: #222222 !important;
-    background-color: #FFFFFF !important;
-    -webkit-text-fill-color: #222222 !important;
-    font-weight: 600 !important;
-    border-radius: 12px !important;
-}
-
-/* Texto de ejemplo dentro de las cajas */
-
-.stTextInput input::placeholder,
-.stTextArea textarea::placeholder {
-    color: #777777 !important;
-    -webkit-text-fill-color: #777777 !important;
-}
-
-/* Campo de clave API */
-
-section[data-testid="stSidebar"] .stTextInput input {
-    color: #222222 !important;
-    background-color: #FFFFFF !important;
-    -webkit-text-fill-color: #222222 !important;
-}
-
-/* --------------------------------------------------
-   QUITAR OJO DE LA CLAVE API
-   -------------------------------------------------- */
-
-/* Oculta únicamente el botón de mostrar/ocultar contraseña */
-
-section[data-testid="stSidebar"]
-[data-testid="stTextInput"] button {
-    display: none !important;
-}
-
-/* --------------------------------------------------
-   SELECTORES
-   -------------------------------------------------- */
-
-.stSelectbox div[data-baseweb="select"] {
-    background-color: #FFFFFF !important;
-    border-radius: 12px !important;
-}
-
-.stSelectbox div[data-baseweb="select"] span {
-    color: #222222 !important;
-}
-
-/* --------------------------------------------------
-   SLIDERS
-   -------------------------------------------------- */
-
-section[data-testid="stSidebar"] [data-testid="stSlider"] label {
-    color: #FFFFFF !important;
-}
-
-section[data-testid="stSidebar"] [data-testid="stSlider"] div {
-    color: #FFFFFF;
-}
-
-/* --------------------------------------------------
+/* -----------------------------------------------------
    BOTONES
-   -------------------------------------------------- */
+----------------------------------------------------- */
 
-div.stButton > button {
-    background: #075B55;
+.stButton > button {
+    background: linear-gradient(
+        110deg,
+        #034C47,
+        #08736A
+    ) !important;
     color: #FFFFFF !important;
-    border: 1px solid #075B55;
-    border-radius: 30px;
-    padding: 12px 22px;
-    min-height: 47px;
-    font-family: 'Manrope', sans-serif;
-    font-weight: 800;
-    transition: all 0.25s ease;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 0.65rem 1.3rem !important;
+    font-weight: 700 !important;
+    transition: 0.2s ease;
 }
 
-div.stButton > button:hover {
-    background: #0C756A;
-    color: #DDF18B !important;
-    border-color: #0C756A;
+.stButton > button:hover {
+    background: #08736A !important;
+    color: #FFFFFF !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(3, 76, 71, 0.18);
 }
 
-/* --------------------------------------------------
-   BOTONES DE DESCARGA
-   -------------------------------------------------- */
 
-div.stDownloadButton > button {
-    background: #DDF18B;
-    color: #075B55 !important;
-    border: 1px solid #DDF18B;
-    border-radius: 30px;
-    min-height: 47px;
-    font-weight: 800;
-    font-family: 'Manrope', sans-serif;
-}
-
-div.stDownloadButton > button:hover {
-    background: #CBE879;
-    color: #075B55 !important;
-    border-color: #CBE879;
-}
-
-/* --------------------------------------------------
-   CARGADOR PDF
-   -------------------------------------------------- */
+/* -----------------------------------------------------
+   CARGADOR DE ARCHIVOS
+----------------------------------------------------- */
 
 [data-testid="stFileUploader"] {
     background: #FFFFFF;
-    border: 2px dashed #A6C68D;
-    border-radius: 20px;
-    padding: 20px;
+    border: 2px dashed #A7BBAE;
+    border-radius: 14px;
+    padding: 1rem;
 }
 
 [data-testid="stFileUploader"] * {
-    color: #173F3B;
+    color: #034C47 !important;
 }
 
-/* --------------------------------------------------
-   MENSAJES Y MÉTRICAS
-   -------------------------------------------------- */
 
-.stAlert {
-    border-radius: 14px;
-}
+/* -----------------------------------------------------
+   MÉTRICAS Y CONTENEDORES
+----------------------------------------------------- */
 
 [data-testid="stMetric"] {
     background: #FFFFFF;
-    padding: 18px;
-    border-radius: 16px;
-    border: 1px solid #E5EBDD;
+    border: 1px solid #E2E9DF;
+    border-radius: 12px;
+    padding: 1rem;
 }
 
-hr {
-    border-color: #DFE9D7;
+[data-testid="stMetricLabel"] {
+    color: #55736A !important;
 }
 
-footer {
-    visibility: hidden;
+[data-testid="stMetricValue"] {
+    color: #034C47 !important;
+}
+
+
+/* -----------------------------------------------------
+   EXPANDERS
+----------------------------------------------------- */
+
+[data-testid="stExpander"] {
+    background: #FFFFFF;
+    border: 1px solid #E2E9DF;
+    border-radius: 12px;
+}
+
+[data-testid="stExpander"] summary {
+    color: #034C47 !important;
+}
+
+
+/* -----------------------------------------------------
+   ALERTAS
+----------------------------------------------------- */
+
+[data-testid="stAlert"] {
+    border-radius: 10px;
+}
+
+
+/* -----------------------------------------------------
+   DESCARGAS
+----------------------------------------------------- */
+
+.stDownloadButton > button {
+    background: #DDF18B !important;
+    color: #034C47 !important;
+    border: 1px solid #DDF18B !important;
+    border-radius: 10px !important;
+    font-weight: 800 !important;
+}
+
+.stDownloadButton > button:hover {
+    background: #CBE76C !important;
+    color: #034C47 !important;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 
-# ==========================================================
-# 3. ENCABEZADO PRINCIPAL
-# ==========================================================
+# =========================================================
+# ENCABEZADO PRINCIPAL
+# =========================================================
 
 st.html("""
 <div style="
-    background: linear-gradient(
-        125deg,
-        #034C47 0%,
-        #08736A 55%,
-        #15947A 100%
-    );
-    padding: 42px;
-    border-radius: 25px;
-    margin-bottom: 32px;
-    box-shadow: 0 12px 30px rgba(3,76,71,0.12);
-    font-family: 'Manrope', sans-serif;
+    background: linear-gradient(125deg, #034C47 0%, #08736A 55%, #15947A 100%);
+    padding: 38px 42px;
+    border-radius: 20px;
+    color: white;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 24px rgba(3, 76, 71, 0.13);
 ">
-
     <div style="
-        color: #DDF18B;
-        font-size: 12px;
-        font-weight: 800;
+        font-size: 11px;
         letter-spacing: 3px;
-        margin-bottom: 15px;
+        font-weight: 800;
+        color: #DDF18B;
+        margin-bottom: 12px;
     ">
         SMART EDUCATION PLATFORM
     </div>
 
     <h1 style="
-        font-family: 'Manrope', sans-serif;
-        font-size: 43px;
-        font-weight: 800;
+        font-family: Manrope, sans-serif;
         color: white;
+        font-size: 48px;
+        font-weight: 800;
         margin: 0 0 12px 0;
     ">
         EvaluaPro.
     </h1>
 
     <p style="
-        color: #E5F5DB;
+        color: #FFFFFF;
         font-size: 16px;
-        line-height: 1.8;
-        max-width: 680px;
+        line-height: 1.7;
+        max-width: 750px;
+        margin: 0 0 22px 0;
     ">
-        Transforma tus materiales de clase en evaluaciones
-        inteligentes. Sube tus documentos, personaliza
-        tus preguntas y crea exámenes en segundos.
+        Transforma tus materiales de clase en evaluaciones inteligentes.
+        Sube tus documentos, personaliza tus preguntas y crea exámenes en segundos.
     </p>
 
     <div style="
         display: inline-block;
-        background: #DDF18B;
-        color: #075B55;
-        padding: 9px 18px;
+        background: rgba(255,255,255,0.13);
+        border: 1px solid rgba(255,255,255,0.25);
+        padding: 9px 15px;
         border-radius: 30px;
         font-size: 11px;
+        letter-spacing: 1.5px;
         font-weight: 800;
-        letter-spacing: 1px;
+        color: #DDF18B;
     ">
         ✦ APRENDER · EVALUAR · MEJORAR
     </div>
-
 </div>
 """)
 
 
-# ==========================================================
-# 4. BARRA LATERAL
-# ==========================================================
+# =========================================================
+# BARRA LATERAL: CONFIGURACIÓN
+# =========================================================
 
 with st.sidebar:
 
-    st.markdown("## ✦ EvaluaPro")
-    st.caption("Plataforma inteligente para profesores")
+    st.markdown("## ⚙️ Configuración")
 
-    st.divider()
+    st.markdown(
+        "Personaliza tu evaluación antes de comenzar."
+    )
 
-    st.markdown("### 🔑 Conexión")
+    st.markdown("---")
+
+    st.markdown("### 🔐 Conexión con OpenAI")
 
     api_key = st.text_input(
         "Clave API de OpenAI",
         type="password",
         placeholder="Introduce tu clave sk-...",
-        help="Introduce una clave API válida de OpenAI."
+        help="Tu clave se utiliza para conectar con OpenAI durante la generación."
     ).strip()
 
     if api_key:
-
         st.success("✓ Clave API introducida")
 
         st.html("""
         <div style="
-            background:#E8F5DF;
-            border:1px solid #B9D99D;
-            border-radius:12px;
-            padding:13px;
-            margin-top:8px;
-            color:#075B55;
-            font-size:13px;
-            font-weight:700;
+            background: rgba(221,241,139,0.15);
+            border: 1px solid #DDF18B;
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            font-size: 12px;
+            line-height: 1.6;
         ">
-            ✓ Ya puedes cargar tu documento PDF
-            y generar tu evaluación.
+            ✓ Ya puedes cargar tu documento PDF y generar tu evaluación.
         </div>
         """)
-
     else:
-
         st.warning("🔑 Introduce tu clave API para comenzar.")
 
-    st.divider()
+    st.markdown("---")
 
-    st.markdown("### 📊 Configuración del examen")
+    st.markdown("### 📝 Parámetros del examen")
 
-    numero_preguntas = st.slider(
-        "Cantidad de preguntas",
+    question_count = st.slider(
+        "Número de preguntas",
         min_value=3,
         max_value=20,
-        value=10
+        value=10,
+        step=1
     )
 
-    dificultad = st.selectbox(
+    difficulty = st.selectbox(
         "Nivel de dificultad",
-        ["Fácil", "Media", "Difícil"]
+        ["Fácil", "Media", "Difícil"],
+        index=1
     )
 
-    tipo = st.selectbox(
-        "Tipo de evaluación",
+    question_type = st.selectbox(
+        "Tipo de preguntas",
         [
             "Opción múltiple",
             "Verdadero o falso",
@@ -484,648 +499,730 @@ with st.sidebar:
         ]
     )
 
-    st.divider()
+    st.markdown("---")
 
-    st.markdown("### 📚 ¿Cómo funciona?")
-
-    st.markdown("""
-    **01.** Introduce tu clave API.
-
-    **02.** Sube el material de clase.
-
-    **03.** Personaliza el examen.
-
-    **04.** Genera las preguntas.
-
-    **05.** Descarga los resultados.
-    """)
-
-    st.divider()
-
-    st.html("""
-    <div style="
-        text-align:center;
-        color:#DDF18B;
-        font-size:11px;
-        font-weight:700;
-        padding:10px;
-    ">
-        EVALUAPRO · EDUCACIÓN INTELIGENTE
-    </div>
-    """)
-
-
-# ==========================================================
-# 5. ESTADO DE LA APLICACIÓN
-# ==========================================================
-
-if "evaluacion" not in st.session_state:
-    st.session_state.evaluacion = None
-
-if "firma_evaluacion" not in st.session_state:
-    st.session_state.firma_evaluacion = None
-
-if "nombre_documento" not in st.session_state:
-    st.session_state.nombre_documento = None
-
-if "configuracion" not in st.session_state:
-    st.session_state.configuracion = None
-
-
-# ==========================================================
-# 6. CARGA DEL PDF
-# ==========================================================
-
-st.markdown(
-    '<div class="section-title">📄 Carga tu documento PDF</div>',
-    unsafe_allow_html=True
-)
-
-st.write(
-    "Selecciona tu material de clase para crear "
-    "una evaluación inteligente."
-)
-
-if api_key:
-    st.success(
-        "✓ Conexión preparada. Ya puedes seleccionar tu PDF."
-    )
-else:
-    st.warning(
-        "🔑 Primero introduce tu clave API de OpenAI "
-        "en el menú lateral."
+    st.caption(
+        "EvaluaPro · SMART EDUCATION PLATFORM"
     )
 
-pdf = st.file_uploader(
-    "Selecciona tu material de clase",
-    type=["pdf"],
-    help="Sube un documento PDF con texto seleccionable."
-)
 
-if pdf is not None:
+# =========================================================
+# ESTADO DE LA APLICACIÓN
+# =========================================================
 
-    st.success(f"✓ Documento cargado: {pdf.name}")
+if "evaluation" not in st.session_state:
+    st.session_state.evaluation = None
 
-    col1, col2 = st.columns(2)
+if "exam_pdf" not in st.session_state:
+    st.session_state.exam_pdf = None
 
-    with col1:
-        st.metric(
-            "Tamaño del documento",
-            f"{pdf.size / 1024:.1f} KB"
-        )
+if "answer_pdf" not in st.session_state:
+    st.session_state.answer_pdf = None
 
-    with col2:
-        st.metric(
-            "Preguntas configuradas",
-            numero_preguntas
-        )
+if "signature" not in st.session_state:
+    st.session_state.signature = None
+
+if "document_name" not in st.session_state:
+    st.session_state.document_name = None
+
+if "config_signature" not in st.session_state:
+    st.session_state.config_signature = None
 
 
-# ==========================================================
-# 7. EXTRAER TEXTO DEL PDF
-# ==========================================================
+# =========================================================
+# FUNCIONES: EXTRACCIÓN DE PDF
+# =========================================================
 
-def extraer_texto(pdf_bytes):
+def extract_pdf_text(uploaded_file):
 
-    reader = PdfReader(io.BytesIO(pdf_bytes))
+    uploaded_file.seek(0)
+
+    reader = PdfReader(uploaded_file)
 
     if reader.is_encrypted:
         raise ValueError(
             "El PDF está protegido con contraseña. "
-            "Sube una versión desbloqueada."
+            "Carga un documento sin protección."
         )
 
-    texto = "\n".join(
-        pagina.extract_text() or ""
-        for pagina in reader.pages
-    )
+    pages_text = []
 
-    if not texto.strip():
+    for page in reader.pages:
+        text = page.extract_text() or ""
+
+        if text.strip():
+            pages_text.append(text)
+
+    full_text = "\n\n".join(pages_text).strip()
+
+    if not full_text:
         raise ValueError(
-            "No se encontró texto en el documento. "
-            "Puede ser un PDF escaneado sin OCR."
+            "No se encontró texto en el PDF. "
+            "Si el documento está escaneado, primero debes aplicar OCR."
         )
 
-    return texto
+    return full_text, len(reader.pages)
 
 
-# ==========================================================
-# 8. CREAR BASE DE CONOCIMIENTO
-# ==========================================================
+# =========================================================
+# FUNCIONES: DIVISIÓN DEL TEXTO
+# =========================================================
 
-def crear_base_conocimiento(texto, api_key):
+def split_document(text):
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=700,
-        chunk_overlap=100
+        chunk_overlap=100,
+        separators=["\n\n", "\n", ". ", " ", ""]
     )
 
-    fragmentos = splitter.split_text(texto)
+    chunks = splitter.split_text(text)
 
-    if not fragmentos:
+    if not chunks:
         raise ValueError(
             "No fue posible dividir el contenido del documento."
         )
 
-    embeddings = OpenAIEmbeddings(
-        model="text-embedding-3-small",
-        api_key=api_key
-    )
-
-    base = FAISS.from_texts(
-        fragmentos,
-        embeddings
-    )
-
-    return base, len(fragmentos)
+    return chunks
 
 
-# ==========================================================
-# 9. GENERAR EVALUACIÓN
-# ==========================================================
+# =========================================================
+# FUNCIONES: GENERACIÓN DE PREGUNTAS
+# =========================================================
 
-def generar_evaluacion(
-    base,
+def generate_questions(
+    vector_store,
     api_key,
-    numero_preguntas,
-    dificultad,
-    tipo
+    question_count,
+    difficulty,
+    question_type
 ):
 
-    docs = base.similarity_search(
-        "Conceptos principales, definiciones, características, "
-        "explicaciones, ejemplos y datos importantes del documento.",
-        k=min(15, base.index.ntotal)
+    retriever_results = vector_store.similarity_search(
+        "Conceptos principales, definiciones, explicaciones, "
+        "datos importantes y conocimientos fundamentales del documento.",
+        k=15
     )
 
-    contexto = "\n\n---\n\n".join(
-        doc.page_content for doc in docs
+    context = "\n\n".join(
+        document.page_content
+        for document in retriever_results
     )
 
-    if tipo == "Opción múltiple":
+    if question_type == "Opción múltiple":
 
-        formato = """
-Cada pregunta debe tener cuatro opciones: A, B, C y D.
-Debe existir una sola respuesta correcta.
-La respuesta debe ser A, B, C o D.
+        format_instructions = """
+Cada pregunta debe tener exactamente cuatro opciones:
+A, B, C y D.
+
+La respuesta correcta debe ser una sola letra:
+A, B, C o D.
 """
 
-        ejemplo_opciones = """
-"opciones": {
-    "A": "Primera opción",
-    "B": "Segunda opción",
-    "C": "Tercera opción",
-    "D": "Cuarta opción"
-},
-"respuesta": "A"
+        example = """
+{
+  "questions": [
+    {
+      "question": "¿Cuál es la idea principal del texto?",
+      "options": {
+        "A": "Primera opción",
+        "B": "Segunda opción",
+        "C": "Tercera opción",
+        "D": "Cuarta opción"
+      },
+      "answer": "B",
+      "explanation": "Explicación breve de la respuesta."
+    }
+  ]
+}
 """
 
-    elif tipo == "Verdadero o falso":
+    elif question_type == "Verdadero o falso":
 
-        formato = """
-Cada pregunta debe ser una afirmación que pueda
-clasificarse como Verdadero o Falso.
-La respuesta debe ser A para Verdadero o B para Falso.
+        format_instructions = """
+Cada pregunta debe ser una afirmación que pueda ser verdadera o falsa.
+
+Usa estas opciones:
+A: Verdadero
+B: Falso
+
+La respuesta correcta debe ser A o B.
 """
 
-        ejemplo_opciones = """
-"opciones": {
-    "A": "Verdadero",
-    "B": "Falso"
-},
-"respuesta": "A"
+        example = """
+{
+  "questions": [
+    {
+      "question": "El concepto explicado en el documento es correcto.",
+      "options": {
+        "A": "Verdadero",
+        "B": "Falso"
+      },
+      "answer": "A",
+      "explanation": "Explicación breve de la respuesta."
+    }
+  ]
+}
 """
 
     else:
 
-        formato = """
-Cada pregunta debe ser abierta y permitir que el estudiante
-responda con sus propias palabras.
-Incluye una respuesta esperada.
+        format_instructions = """
+Cada pregunta debe ser abierta y permitir una respuesta desarrollada.
+
+Incluye una respuesta esperada que sirva como guía de corrección.
+No incluyas opciones.
 """
 
-        ejemplo_opciones = """
-"opciones": {},
-"respuesta": "Respuesta esperada"
+        example = """
+{
+  "questions": [
+    {
+      "question": "Explica los principales conceptos presentados en el documento.",
+      "answer": "Respuesta esperada con los elementos fundamentales.",
+      "explanation": "Criterio para valorar la respuesta."
+    }
+  ]
+}
 """
 
-    instrucciones = f"""
-Eres un experto en pedagogía y diseño de evaluaciones.
+    prompt = f"""
+Eres un experto en diseño de evaluaciones educativas.
 
-Crea un examen educativo a partir del documento.
+Debes crear una evaluación basada exclusivamente en el contenido
+del documento proporcionado.
 
-REGLAS:
+CARACTERÍSTICAS:
 
-1. Genera exactamente {numero_preguntas} preguntas.
-2. Dificultad: {dificultad}.
-3. Modalidad: {tipo}.
-4. Utiliza únicamente información del documento.
-5. No inventes datos ni conceptos.
-6. Evita repetir preguntas.
-7. Las preguntas deben ser claras.
-8. Las respuestas deben estar respaldadas por el documento.
-9. Devuelve exclusivamente JSON válido.
-10. No utilices bloques Markdown.
+- Número exacto de preguntas: {question_count}
+- Dificultad: {difficulty}
+- Tipo: {question_type}
+- Idioma: español.
+- Evita preguntas repetidas.
+- Evita información que no aparezca en el documento.
+- Formula preguntas claras y académicas.
+- Distribuye las preguntas entre los temas disponibles.
+- No inventes datos ni conceptos.
 
-REGLAS ESPECÍFICAS:
+INSTRUCCIONES DEL FORMATO:
 
-{formato}
+{format_instructions}
 
-FORMATO DE CADA PREGUNTA:
+Devuelve exclusivamente un JSON válido con esta estructura:
 
-{{
-    "numero": 1,
-    "pregunta": "Texto de la pregunta",
-    {ejemplo_opciones},
-    "explicacion": "Explicación de la respuesta"
-}}
+{example}
 
-ESTRUCTURA FINAL:
+CONTENIDO DEL DOCUMENTO:
 
-{{
-    "titulo": "Evaluación de conocimientos",
-    "preguntas": []
-}}
+{context}
 """
 
     llm = ChatOpenAI(
         model="gpt-4o-mini",
-        temperature=0.2,
-        api_key=api_key,
-        max_retries=2
+        temperature=0.3,
+        api_key=api_key
     )
 
-    respuesta = llm.invoke([
-        (
-            "system",
-            "Eres un generador profesional de evaluaciones "
-            "educativas. Utiliza únicamente el contexto "
-            "proporcionado y devuelve JSON válido."
-        ),
-        (
-            "human",
-            f"""
-CONTENIDO DEL DOCUMENTO:
+    response = llm.invoke(prompt)
 
-{contexto}
+    content = response.content
 
-INSTRUCCIONES:
-
-{instrucciones}
-"""
-        )
-    ])
-
-    contenido = respuesta.content
-
-    if isinstance(contenido, list):
-        contenido = "".join(
+    if isinstance(content, list):
+        content = "".join(
             item.get("text", "")
             if isinstance(item, dict)
             else str(item)
-            for item in contenido
+            for item in content
         )
 
-    contenido = contenido.strip()
+    content = str(content).strip()
 
-    contenido = re.sub(
+    content = re.sub(
         r"^```(?:json)?\s*",
         "",
-        contenido,
+        content,
         flags=re.IGNORECASE
     )
 
-    contenido = re.sub(
+    content = re.sub(
         r"\s*```$",
         "",
-        contenido
+        content
     )
 
-    resultado = json.loads(contenido)
+    try:
+        result = json.loads(content)
 
-    preguntas = resultado.get("preguntas", [])
+    except json.JSONDecodeError:
 
-    if not isinstance(preguntas, list) or not preguntas:
-        raise ValueError(
-            "La IA no devolvió preguntas válidas."
+        match = re.search(
+            r"\{.*\}",
+            content,
+            flags=re.DOTALL
         )
 
-    if len(preguntas) != numero_preguntas:
+        if not match:
+            raise ValueError(
+                "La IA no devolvió un JSON válido."
+            )
+
+        result = json.loads(match.group(0))
+
+    questions = result.get("questions")
+
+    if not isinstance(questions, list):
         raise ValueError(
-            f"Se solicitaron {numero_preguntas} preguntas, "
-            f"pero se generaron {len(preguntas)}. "
-            "Intenta nuevamente."
+            "La respuesta generada no contiene una lista de preguntas."
         )
 
-    for i, pregunta in enumerate(preguntas, start=1):
+    if len(questions) != question_count:
+        raise ValueError(
+            f"La IA generó {len(questions)} preguntas "
+            f"en lugar de las {question_count} solicitadas. "
+            "Inténtalo nuevamente."
+        )
 
-        if not isinstance(pregunta, dict):
-            raise ValueError("Formato incorrecto de pregunta.")
+    for index, question in enumerate(questions, start=1):
 
-        if not pregunta.get("pregunta"):
-            raise ValueError("Hay una pregunta sin contenido.")
+        if not isinstance(question, dict):
+            raise ValueError(
+                f"La pregunta {index} tiene un formato incorrecto."
+            )
 
-        if not pregunta.get("respuesta"):
-            raise ValueError("Hay una pregunta sin respuesta.")
+        if not question.get("question"):
+            raise ValueError(
+                f"La pregunta {index} no tiene enunciado."
+            )
 
-        opciones = pregunta.get("opciones", {})
+        if not question.get("answer"):
+            raise ValueError(
+                f"La pregunta {index} no tiene respuesta."
+            )
 
-        if not isinstance(opciones, dict):
-            raise ValueError("Formato incorrecto de opciones.")
+        if question_type in [
+            "Opción múltiple",
+            "Verdadero o falso"
+        ]:
 
-        if tipo == "Opción múltiple":
+            options = question.get("options")
 
-            if not all(
-                letra in opciones
-                for letra in ["A", "B", "C", "D"]
-            ):
+            if not isinstance(options, dict):
                 raise ValueError(
-                    "Una pregunta no contiene cuatro opciones."
+                    f"La pregunta {index} no contiene opciones válidas."
                 )
 
-            if pregunta["respuesta"] not in ["A", "B", "C", "D"]:
+            expected_keys = (
+                ["A", "B", "C", "D"]
+                if question_type == "Opción múltiple"
+                else ["A", "B"]
+            )
+
+            for key in expected_keys:
+                if not options.get(key):
+                    raise ValueError(
+                        f"La pregunta {index} no tiene la opción {key}."
+                    )
+
+            if question["answer"] not in expected_keys:
                 raise ValueError(
-                    "Una respuesta de opción múltiple es inválida."
+                    f"La respuesta de la pregunta {index} "
+                    "no corresponde a una opción válida."
                 )
 
-        elif tipo == "Verdadero o falso":
-
-            if pregunta["respuesta"] not in ["A", "B"]:
-                raise ValueError(
-                    "Una respuesta de verdadero/falso es inválida."
-                )
-
-        pregunta["numero"] = i
-
-    return {
-        "titulo": resultado.get(
-            "titulo",
-            "Evaluación de conocimientos"
-        ),
-        "preguntas": preguntas
-    }
+    return questions
 
 
-# ==========================================================
-# 10. CREAR PDF
-# ==========================================================
+# =========================================================
+# FUNCIONES: GENERACIÓN DE PDF
+# =========================================================
 
-def crear_pdf(
-    evaluacion,
-    nombre_documento,
-    incluir_respuestas=False
-):
+def make_pdf(title, questions, question_type, answer_key=False):
 
     buffer = io.BytesIO()
 
     doc = SimpleDocTemplate(
         buffer,
-        pagesize=letter,
-        rightMargin=48,
-        leftMargin=48,
-        topMargin=48,
-        bottomMargin=48
+        pagesize=A4,
+        rightMargin=2 * cm,
+        leftMargin=2 * cm,
+        topMargin=2 * cm,
+        bottomMargin=2 * cm
     )
 
-    estilos = getSampleStyleSheet()
+    styles = getSampleStyleSheet()
 
-    estilo_titulo = ParagraphStyle(
-        "TituloPersonalizado",
-        parent=estilos["Title"],
-        fontName="Helvetica-Bold",
-        fontSize=20,
-        leading=25,
-        alignment=TA_CENTER,
-        textColor=colors.HexColor("#075B55"),
-        spaceAfter=10
+    styles.add(
+        ParagraphStyle(
+            name="EvalTitle",
+            parent=styles["Title"],
+            fontName="Helvetica-Bold",
+            fontSize=21,
+            leading=26,
+            alignment=TA_CENTER,
+            textColor=colors.HexColor("#034C47"),
+            spaceAfter=10
+        )
     )
 
-    estilo_subtitulo = ParagraphStyle(
-        "Subtitulo",
-        parent=estilos["Normal"],
-        fontSize=10,
-        alignment=TA_CENTER,
-        textColor=colors.HexColor("#71817B"),
-        spaceAfter=20
+    styles.add(
+        ParagraphStyle(
+            name="EvalSubtitle",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=10,
+            leading=15,
+            alignment=TA_CENTER,
+            textColor=colors.HexColor("#55736A"),
+            spaceAfter=22
+        )
     )
 
-    estilo_pregunta = ParagraphStyle(
-        "Pregunta",
-        parent=estilos["Normal"],
-        fontName="Helvetica-Bold",
-        fontSize=11,
-        leading=16,
-        textColor=colors.HexColor("#075B55"),
-        spaceBefore=12,
-        spaceAfter=7
+    styles.add(
+        ParagraphStyle(
+            name="QuestionStyle",
+            parent=styles["Normal"],
+            fontName="Helvetica-Bold",
+            fontSize=11,
+            leading=16,
+            textColor=colors.HexColor("#034C47"),
+            spaceBefore=12,
+            spaceAfter=7
+        )
     )
 
-    estilo_texto = ParagraphStyle(
-        "Texto",
-        parent=estilos["Normal"],
-        fontSize=10,
-        leading=15,
-        spaceAfter=5
+    styles.add(
+        ParagraphStyle(
+            name="OptionStyle",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=10,
+            leading=15,
+            leftIndent=14,
+            textColor=colors.HexColor("#333333"),
+            spaceAfter=3
+        )
     )
 
-    estilo_respuesta = ParagraphStyle(
-        "Respuesta",
-        parent=estilos["Normal"],
-        fontSize=9,
-        leading=14,
-        textColor=colors.HexColor("#166534"),
-        spaceAfter=5
+    styles.add(
+        ParagraphStyle(
+            name="AnswerStyle",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=10,
+            leading=15,
+            textColor=colors.HexColor("#333333"),
+            leftIndent=10,
+            spaceAfter=5
+        )
     )
 
-    elementos = []
+    story = []
 
-    titulo = (
-        "CLAVE DE RESPUESTAS"
-        if incluir_respuestas
-        else "EVALUACIÓN DE CONOCIMIENTOS"
-    )
+    if answer_key:
+        title = "Solucionario · " + title
 
-    elementos.append(
-        Paragraph(titulo, estilo_titulo)
-    )
-
-    elementos.append(
+    story.append(
         Paragraph(
-            "Material de referencia: "
-            + html.escape(nombre_documento),
-            estilo_subtitulo
+            html.escape(title),
+            styles["EvalTitle"]
         )
     )
 
-    elementos.append(
-        HRFlowable(
-            width="100%",
-            thickness=1,
-            color=colors.HexColor("#DCE7D7")
+    subtitle = (
+        "EvaluaPro · SMART EDUCATION PLATFORM"
+        if not answer_key
+        else "Respuestas y criterios de corrección"
+    )
+
+    story.append(
+        Paragraph(
+            subtitle,
+            styles["EvalSubtitle"]
         )
     )
 
-    elementos.append(Spacer(1, 20))
+    if not answer_key:
 
-    if not incluir_respuestas:
-
-        elementos.append(
+        story.append(
             Paragraph(
-                "Nombre del estudiante: "
-                "________________________________",
-                estilo_texto
+                "<b>Nombre:</b> __________________________________________",
+                styles["Normal"]
             )
         )
 
-        elementos.append(
+        story.append(Spacer(1, 10))
+
+        story.append(
             Paragraph(
-                "Fecha: _____________________ "
-                "Curso: _____________________",
-                estilo_texto
+                "<b>Fecha:</b> ____________________ "
+                "&nbsp;&nbsp;&nbsp;&nbsp; "
+                "<b>Curso:</b> ____________________",
+                styles["Normal"]
             )
         )
 
-        elementos.append(Spacer(1, 15))
+        story.append(Spacer(1, 18))
 
-    for pregunta in evaluacion["preguntas"]:
+    else:
 
-        numero = pregunta["numero"]
-
-        texto_pregunta = html.escape(
-            str(pregunta["pregunta"])
-        )
-
-        elementos.append(
+        story.append(
             Paragraph(
-                f"{numero}. {texto_pregunta}",
-                estilo_pregunta
+                "Documento de respuestas para el docente.",
+                styles["AnswerStyle"]
             )
         )
 
-        opciones = pregunta.get("opciones", {})
+        story.append(Spacer(1, 12))
 
-        if opciones:
+    for index, question in enumerate(questions, start=1):
 
-            for letra, opcion in opciones.items():
+        question_text = html.escape(
+            str(question.get("question", ""))
+        )
 
-                elementos.append(
+        if answer_key:
+
+            answer = str(question.get("answer", ""))
+            explanation = str(
+                question.get("explanation", "")
+            )
+
+            if question_type in [
+                "Opción múltiple",
+                "Verdadero o falso"
+            ]:
+
+                options = question.get("options", {})
+                answer_text = options.get(answer, answer)
+
+                story.append(
                     Paragraph(
-                        f"<b>{html.escape(str(letra))}.</b> "
-                        f"{html.escape(str(opcion))}",
-                        estilo_texto
+                        f"<b>{index}. {question_text}</b>",
+                        styles["QuestionStyle"]
                     )
                 )
 
-        elif not incluir_respuestas:
-
-            elementos.append(
-                Paragraph(
-                    "Respuesta: ______________________________",
-                    estilo_texto
-                )
-            )
-
-            elementos.append(
-                Paragraph(
-                    "________________________________________",
-                    estilo_texto
-                )
-            )
-
-        if incluir_respuestas:
-
-            respuesta = html.escape(
-                str(pregunta["respuesta"])
-            )
-
-            explicacion = html.escape(
-                str(pregunta.get("explicacion", ""))
-            )
-
-            elementos.append(
-                Paragraph(
-                    f"<b>Respuesta correcta / esperada:</b> "
-                    f"{respuesta}",
-                    estilo_respuesta
-                )
-            )
-
-            if explicacion:
-
-                elementos.append(
+                story.append(
                     Paragraph(
-                        f"<b>Explicación:</b> {explicacion}",
-                        estilo_respuesta
+                        f"<b>Respuesta:</b> "
+                        f"{html.escape(str(answer))} — "
+                        f"{html.escape(str(answer_text))}",
+                        styles["AnswerStyle"]
                     )
                 )
 
-        elementos.append(Spacer(1, 10))
+            else:
 
-    doc.build(elementos)
+                story.append(
+                    Paragraph(
+                        f"<b>{index}. {question_text}</b>",
+                        styles["QuestionStyle"]
+                    )
+                )
+
+                story.append(
+                    Paragraph(
+                        f"<b>Respuesta esperada:</b> "
+                        f"{html.escape(answer)}",
+                        styles["AnswerStyle"]
+                    )
+                )
+
+            if explanation:
+                story.append(
+                    Paragraph(
+                        f"<b>Criterio / explicación:</b> "
+                        f"{html.escape(explanation)}",
+                        styles["AnswerStyle"]
+                    )
+                )
+
+        else:
+
+            story.append(
+                Paragraph(
+                    f"{index}. {question_text}",
+                    styles["QuestionStyle"]
+                )
+            )
+
+            options = question.get("options", {})
+
+            if question_type in [
+                "Opción múltiple",
+                "Verdadero o falso"
+            ]:
+
+                for key, value in options.items():
+
+                    story.append(
+                        Paragraph(
+                            f"{html.escape(str(key))}. "
+                            f"{html.escape(str(value))}",
+                            styles["OptionStyle"]
+                        )
+                    )
+
+            else:
+
+                story.append(Spacer(1, 12))
+
+                story.append(
+                    Paragraph(
+                        "________________________________________________________________________",
+                        styles["OptionStyle"]
+                    )
+                )
+
+                story.append(
+                    Paragraph(
+                        "________________________________________________________________________",
+                        styles["OptionStyle"]
+                    )
+                )
+
+                story.append(
+                    Paragraph(
+                        "________________________________________________________________________",
+                        styles["OptionStyle"]
+                    )
+                )
+
+    def add_page_number(canvas, document):
+
+        canvas.saveState()
+
+        canvas.setFont("Helvetica", 8)
+        canvas.setFillColor(
+            colors.HexColor("#55736A")
+        )
+
+        canvas.drawString(
+            2 * cm,
+            1.1 * cm,
+            "EvaluaPro · SMART EDUCATION PLATFORM"
+        )
+
+        canvas.drawRightString(
+            A4[0] - 2 * cm,
+            1.1 * cm,
+            f"Página {document.page}"
+        )
+
+        canvas.restoreState()
+
+    doc.build(
+        story,
+        onFirstPage=add_page_number,
+        onLaterPages=add_page_number
+    )
 
     buffer.seek(0)
 
     return buffer.getvalue()
 
 
-# ==========================================================
-# 11. CONTROL DEL DOCUMENTO
-# ==========================================================
+# =========================================================
+# ÁREA PRINCIPAL: CARGA DEL DOCUMENTO
+# =========================================================
 
-if pdf is not None:
+st.markdown(
+    "## 📄 Carga tu documento"
+)
 
-    firma_actual = hashlib.sha256(
-        pdf.getvalue()
-        + str(numero_preguntas).encode()
-        + dificultad.encode()
-        + tipo.encode()
+st.markdown(
+    "Sube el material de estudio en PDF para convertirlo "
+    "en una evaluación."
+)
+
+uploaded_file = st.file_uploader(
+    "Selecciona un archivo PDF",
+    type=["pdf"],
+    help="Carga un documento PDF que contenga texto seleccionable."
+)
+
+
+# =========================================================
+# VALIDACIÓN DE CONFIGURACIÓN Y DOCUMENTO
+# =========================================================
+
+current_config = (
+    question_count,
+    difficulty,
+    question_type
+)
+
+if uploaded_file:
+
+    document_signature = hashlib.sha256(
+        uploaded_file.getvalue()
     ).hexdigest()
 
-    if firma_actual != st.session_state.firma_evaluacion:
+    current_signature = (
+        document_signature,
+        current_config
+    )
 
-        st.session_state.evaluacion = None
-        st.session_state.nombre_documento = None
-        st.session_state.configuracion = None
+    if st.session_state.signature != current_signature:
+
+        st.session_state.evaluation = None
+        st.session_state.exam_pdf = None
+        st.session_state.answer_pdf = None
+        st.session_state.signature = current_signature
+
+    st.success(
+        f"Documento cargado: {uploaded_file.name}"
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric(
+            "Documento",
+            "PDF"
+        )
+
+    with col2:
+        st.metric(
+            "Preguntas configuradas",
+            question_count
+        )
 
 else:
 
-    firma_actual = None
-
-    st.session_state.evaluacion = None
-    st.session_state.firma_evaluacion = None
-    st.session_state.nombre_documento = None
-    st.session_state.configuracion = None
+    st.info(
+        "Carga un documento PDF para comenzar."
+    )
 
 
-# ==========================================================
-# 12. GENERAR EVALUACIÓN
-# ==========================================================
+# =========================================================
+# GENERAR EVALUACIÓN
+# =========================================================
 
 st.markdown("---")
 
 st.markdown(
-    '<div class="section-title">✨ Genera tu evaluación</div>',
-    unsafe_allow_html=True
+    "## ✨ Generar evaluación"
+)
+
+st.markdown(
+    "EvaluaPro analizará el documento y creará preguntas "
+    "según los parámetros seleccionados."
+)
+
+can_generate = bool(
+    uploaded_file and api_key
 )
 
 if not api_key:
-
     st.warning(
-        "🔑 Debes introducir tu clave API de OpenAI "
-        "en el menú lateral para continuar."
+        "Primero introduce tu clave API de OpenAI en la barra lateral."
     )
 
-elif pdf is None:
-
-    st.info(
-        "📄 Carga tu documento PDF para poder generar "
-        "tu evaluación."
-    )
-
-else:
+if uploaded_file and api_key:
 
     if st.button(
-        "✦ GENERAR EVALUACIÓN",
+        "✨ Generar evaluación",
         type="primary",
         use_container_width=True
     ):
@@ -1133,159 +1230,143 @@ else:
         try:
 
             with st.spinner(
-                "📖 Extrayendo información del documento..."
+                "Leyendo y analizando el documento PDF..."
             ):
 
-                texto = extraer_texto(pdf.getvalue())
-
-            with st.spinner(
-                "🧠 Creando la base de conocimiento..."
-            ):
-
-                base, fragmentos = crear_base_conocimiento(
-                    texto,
-                    api_key
+                document_text, page_count = extract_pdf_text(
+                    uploaded_file
                 )
 
-            st.info(
-                f"Documento analizado: {len(texto):,} caracteres "
-                f"y {fragmentos} fragmentos."
-            )
-
             with st.spinner(
-                "✍️ La inteligencia artificial está creando "
-                "tu evaluación..."
+                "Preparando el contenido para el análisis..."
             ):
 
-                resultado = generar_evaluacion(
-                    base,
-                    api_key,
-                    numero_preguntas,
-                    dificultad,
-                    tipo
+                chunks = split_document(
+                    document_text
                 )
 
-            st.session_state.evaluacion = resultado
-            st.session_state.nombre_documento = pdf.name
+            with st.spinner(
+                "Creando la base de conocimiento..."
+            ):
 
-            st.session_state.configuracion = {
-                "cantidad": numero_preguntas,
-                "dificultad": dificultad,
-                "tipo": tipo
-            }
+                embeddings = OpenAIEmbeddings(
+                    model="text-embedding-3-small",
+                    api_key=api_key
+                )
 
-            st.session_state.firma_evaluacion = firma_actual
+                vector_store = FAISS.from_texts(
+                    chunks,
+                    embeddings
+                )
+
+            with st.spinner(
+                "Diseñando las preguntas de tu evaluación..."
+            ):
+
+                questions = generate_questions(
+                    vector_store=vector_store,
+                    api_key=api_key,
+                    question_count=question_count,
+                    difficulty=difficulty,
+                    question_type=question_type
+                )
+
+            with st.spinner(
+                "Preparando los documentos PDF..."
+            ):
+
+                exam_pdf = make_pdf(
+                    title="Evaluación académica",
+                    questions=questions,
+                    question_type=question_type,
+                    answer_key=False
+                )
+
+                answer_pdf = make_pdf(
+                    title="Evaluación académica",
+                    questions=questions,
+                    question_type=question_type,
+                    answer_key=True
+                )
+
+            st.session_state.evaluation = questions
+            st.session_state.exam_pdf = exam_pdf
+            st.session_state.answer_pdf = answer_pdf
+            st.session_state.document_name = uploaded_file.name
+            st.session_state.config_signature = current_config
 
             st.success(
-                "¡Tu evaluación se ha generado correctamente!"
+                f"¡Evaluación generada correctamente! "
+                f"Se crearon {len(questions)} preguntas "
+                f"a partir de {page_count} páginas."
             )
 
         except Exception as error:
 
             st.error(
-                "No fue posible generar la evaluación. "
-                "Comprueba tu clave API y vuelve a intentarlo."
+                "No fue posible generar la evaluación."
             )
 
             st.exception(error)
 
 
-# ==========================================================
-# 13. MOSTRAR EVALUACIÓN
-# ==========================================================
+# =========================================================
+# VISTA PREVIA Y DESCARGAS
+# =========================================================
 
-if (
-    st.session_state.evaluacion
-    and st.session_state.firma_evaluacion == firma_actual
-):
-
-    evaluacion = st.session_state.evaluacion
-    configuracion = st.session_state.configuracion
+if st.session_state.evaluation:
 
     st.markdown("---")
 
     st.markdown(
-        '<div class="section-title">📋 Tu evaluación está lista</div>',
-        unsafe_allow_html=True
+        "## 📚 Tu evaluación está lista"
     )
 
-    col1, col2, col3 = st.columns(3)
-
-    col1.metric(
-        "Preguntas",
-        len(evaluacion["preguntas"])
+    st.markdown(
+        "Revisa las preguntas y descarga los documentos."
     )
 
-    col2.metric(
-        "Dificultad",
-        configuracion["dificultad"]
-    )
+    questions = st.session_state.evaluation
 
-    col3.metric(
-        "Modalidad",
-        configuracion["tipo"]
-    )
-
-    st.markdown("### 📝 Vista previa del examen")
-
-    st.caption(
-        "Revisa las preguntas antes de descargar el documento."
-    )
-
-    for pregunta in evaluacion["preguntas"]:
+    for index, question in enumerate(
+        questions,
+        start=1
+    ):
 
         with st.container(border=True):
 
             st.markdown(
-                f"**Pregunta {pregunta['numero']}**"
+                f"**Pregunta {index}.** "
+                f"{question['question']}"
             )
 
-            st.write(pregunta["pregunta"])
+            if question_type in [
+                "Opción múltiple",
+                "Verdadero o falso"
+            ]:
 
-            opciones = pregunta.get("opciones", {})
+                options = question.get("options", {})
 
-            if opciones:
+                for key, value in options.items():
 
-                for letra, opcion in opciones.items():
-                    st.write(f"**{letra}.** {opcion}")
+                    st.markdown(
+                        f"- **{key}.** {value}"
+                    )
 
             else:
 
-                st.markdown("_Respuesta abierta_")
-
                 st.text_area(
                     "Espacio para responder",
-                    key=f"respuesta_{pregunta['numero']}",
-                    disabled=True
+                    key=f"answer_space_{index}",
+                    disabled=True,
+                    placeholder="Escribe aquí tu respuesta...",
+                    height=90
                 )
-
-
-    # ======================================================
-    # 14. DESCARGAR DOCUMENTOS
-    # ======================================================
 
     st.markdown("---")
 
     st.markdown(
-        '<div class="section-title">📥 Descarga tus documentos</div>',
-        unsafe_allow_html=True
-    )
-
-    st.write(
-        "Descarga el examen para tus estudiantes y la clave "
-        "de respuestas para uso exclusivo del profesor."
-    )
-
-    examen_pdf = crear_pdf(
-        evaluacion,
-        st.session_state.nombre_documento,
-        incluir_respuestas=False
-    )
-
-    respuestas_pdf = crear_pdf(
-        evaluacion,
-        st.session_state.nombre_documento,
-        incluir_respuestas=True
+        "## ⬇️ Descargar documentos"
     )
 
     col1, col2 = st.columns(2)
@@ -1294,8 +1375,8 @@ if (
 
         st.download_button(
             label="📄 Descargar examen PDF",
-            data=examen_pdf,
-            file_name="Examen_EvaluaPro.pdf",
+            data=st.session_state.exam_pdf,
+            file_name="EvaluaPro_Examen.pdf",
             mime="application/pdf",
             use_container_width=True
         )
@@ -1303,102 +1384,94 @@ if (
     with col2:
 
         st.download_button(
-            label="🔑 Descargar respuestas PDF",
-            data=respuestas_pdf,
-            file_name="Respuestas_EvaluaPro.pdf",
+            label="🔑 Descargar solucionario PDF",
+            data=st.session_state.answer_pdf,
+            file_name="EvaluaPro_Solucionario.pdf",
             mime="application/pdf",
             use_container_width=True
         )
 
+    with st.expander(
+        "👁️ Ver respuestas correctas"
+    ):
 
-    # ======================================================
-    # 15. CONSULTAR RESPUESTAS
-    # ======================================================
+        for index, question in enumerate(
+            questions,
+            start=1
+        ):
 
-    with st.expander("🔍 Consultar clave de respuestas"):
+            answer = question.get("answer", "")
 
-        for pregunta in evaluacion["preguntas"]:
+            if question_type in [
+                "Opción múltiple",
+                "Verdadero o falso"
+            ]:
 
-            st.markdown(
-                f"**Pregunta {pregunta['numero']}**"
+                options = question.get("options", {})
+                answer_text = options.get(answer, answer)
+
+                st.markdown(
+                    f"**Pregunta {index}:** "
+                    f"{answer} — {answer_text}"
+                )
+
+            else:
+
+                st.markdown(
+                    f"**Pregunta {index}:** {answer}"
+                )
+
+            explanation = question.get(
+                "explanation",
+                ""
             )
 
-            st.write(
-                f"Respuesta: {pregunta['respuesta']}"
-            )
+            if explanation:
+                st.caption(explanation)
 
-            st.write(
-                f"Explicación: "
-                f"{pregunta.get('explicacion', '')}"
-            )
-
-            st.divider()
-
-
-    # ======================================================
-    # 16. NUEVA EVALUACIÓN
-    # ======================================================
+    st.markdown("---")
 
     if st.button(
-        "🔄 Crear una nueva evaluación",
+        "🔄 Crear nueva evaluación",
         use_container_width=True
     ):
 
-        st.session_state.evaluacion = None
-        st.session_state.firma_evaluacion = None
-        st.session_state.nombre_documento = None
-        st.session_state.configuracion = None
+        st.session_state.evaluation = None
+        st.session_state.exam_pdf = None
+        st.session_state.answer_pdf = None
+        st.session_state.signature = None
+        st.session_state.document_name = None
 
         st.rerun()
 
 
-# ==========================================================
-# 17. PIE DE PÁGINA
-# ==========================================================
+# =========================================================
+# PIE DE PÁGINA
+# =========================================================
 
 st.markdown("---")
 
 st.html("""
 <div style="
     text-align: center;
-    padding: 30px 10px;
-    color: #71817B;
-    font-family: 'Manrope', sans-serif;
+    padding: 18px 10px;
+    color: #55736A;
+    font-family: Manrope, sans-serif;
+    font-size: 12px;
 ">
-
     <div style="
-        font-size: 22px;
+        color: #034C47;
         font-weight: 800;
-        color: #075B55;
-        margin-bottom: 8px;
+        letter-spacing: 1.5px;
+        margin-bottom: 6px;
     ">
         EvaluaPro.
     </div>
 
-    <div style="
-        font-size: 13px;
-        font-weight: 600;
-        color: #075B55;
-    ">
-        Aprende · Evalúa · Mejora
+    SMART EDUCATION PLATFORM
+
+    <div style="margin-top: 8px;">
+        APRENDER · EVALUAR · MEJORAR
     </div>
-
-    <div style="
-        font-size: 11px;
-        margin-top: 12px;
-        color: #71817B;
-    ">
-        Plataforma inteligente para la creación
-        de evaluaciones educativas.
-    </div>
-
-    <div style="
-        width: 60px;
-        height: 3px;
-        background: linear-gradient(90deg, #075B55, #DDF18B);
-        border-radius: 10px;
-        margin: 18px auto 0 auto;
-    "></div>
-
 </div>
 """)

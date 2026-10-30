@@ -271,37 +271,70 @@ footer {
 """, unsafe_allow_html=True)
 
 
+
 # ==========================================================
-# 3. ENCABEZADO PRINCIPAL
+# 3. ENCABEZADO PRINCIPAL - CORREGIDO
 # ==========================================================
 
-st.markdown("""
-<div class="hero">
-
+st.markdown(
+    """
     <div style="
-        color:#DDF18B;
-        font-size:12px;
-        font-weight:800;
-        letter-spacing:3px;
-        margin-bottom:15px;
+        background: linear-gradient(125deg, #034C47 0%, #08736A 55%, #15947A 100%);
+        padding: 42px;
+        border-radius: 25px;
+        color: white;
+        margin-bottom: 32px;
+        box-shadow: 0 12px 30px rgba(3,76,71,0.12);
     ">
-        SMART EDUCATION PLATFORM
+        <div style="
+            color: #DDF18B;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+        ">
+            SMART EDUCATION PLATFORM
+        </div>
+
+        <h1 style="
+            font-family: 'Manrope', sans-serif;
+            font-size: 43px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 10px;
+        ">
+            EvaluaPro.
+        </h1>
+
+        <p style="
+            color: #E5F5DB;
+            font-size: 16px;
+            line-height: 1.8;
+            max-width: 680px;
+        ">
+            Transforma tus materiales de clase en evaluaciones
+            inteligentes. Sube tus documentos, personaliza
+            tus preguntas y crea exámenes en segundos.
+        </p>
+
+        <div style="
+            display: inline-block;
+            background: #DDF18B;
+            color: #075B55;
+            padding: 9px 18px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-top: 12px;
+        ">
+            ✦ APRENDER · EVALUAR · MEJORAR
+        </div>
     </div>
+    """,
+    unsafe_allow_html=True
+)
 
-    <h1>EvaluaPro.</h1>
-
-    <p>
-        Transforma tus materiales de clase en evaluaciones
-        inteligentes. Sube tus documentos, personaliza
-        tus preguntas y crea exámenes en segundos.
-    </p>
-
-    <div class="hero-tag">
-        ✦ APRENDER · EVALUAR · MEJORAR
-    </div>
-
-</div>
-""", unsafe_allow_html=True)
 
 
 # ==========================================================

@@ -82,7 +82,7 @@ section[data-testid="stSidebar"] {
 }
 
 section[data-testid="stSidebar"] * {
-    color: white;
+    font-family: 'Manrope', sans-serif;
 }
 
 section[data-testid="stSidebar"] h1,
@@ -92,7 +92,7 @@ section[data-testid="stSidebar"] h3 {
     font-weight: 800;
 }
 
-/* TÍTULOS */
+/* TITULOS */
 
 .section-title {
     color: #075B55;
@@ -103,23 +103,67 @@ section[data-testid="stSidebar"] h3 {
     margin-bottom: 12px;
 }
 
+/* CAMPOS DE TEXTO NEGROS */
+
+.stTextInput input,
+.stTextArea textarea,
+.stNumberInput input {
+    color: #111111 !important;
+    background-color: #FFFFFF !important;
+    -webkit-text-fill-color: #111111 !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+}
+
+.stTextInput input::placeholder,
+.stTextArea textarea::placeholder {
+    color: #777777 !important;
+    -webkit-text-fill-color: #777777 !important;
+}
+
+/* CAMPOS DE LA BARRA LATERAL */
+
+section[data-testid="stSidebar"] .stTextInput input {
+    color: #111111 !important;
+    background-color: #FFFFFF !important;
+    -webkit-text-fill-color: #111111 !important;
+}
+
+/* SELECTORES */
+
+.stSelectbox div[data-baseweb="select"] {
+    background-color: white !important;
+    color: #111111 !important;
+    border-radius: 12px;
+}
+
+.stSelectbox div[data-baseweb="select"] span {
+    color: #111111 !important;
+}
+
+/* SLIDERS */
+
+.stSlider p {
+    color: #FFFFFF !important;
+}
+
 /* BOTONES */
 
 div.stButton > button {
     background: #075B55;
-    color: white;
+    color: white !important;
     border: 1px solid #075B55;
     border-radius: 30px;
     padding: 12px 22px;
     min-height: 47px;
     font-family: 'Manrope', sans-serif;
-    font-weight: 700;
+    font-weight: 800;
     transition: all 0.25s ease;
 }
 
 div.stButton > button:hover {
     background: #0C756A;
-    color: #DDF18B;
+    color: #DDF18B !important;
     border-color: #0C756A;
 }
 
@@ -127,7 +171,7 @@ div.stButton > button:hover {
 
 div.stDownloadButton > button {
     background: #DDF18B;
-    color: #075B55;
+    color: #075B55 !important;
     border: 1px solid #DDF18B;
     border-radius: 30px;
     min-height: 47px;
@@ -137,24 +181,11 @@ div.stDownloadButton > button {
 
 div.stDownloadButton > button:hover {
     background: #CBE879;
-    color: #075B55;
+    color: #075B55 !important;
     border-color: #CBE879;
 }
 
-/* CAMPOS */
-
-.stTextInput input,
-.stTextArea textarea {
-    border-radius: 12px;
-    border: 1px solid #DCE7D7;
-    background: white;
-}
-
-.stSelectbox div[data-baseweb="select"] > div {
-    border-radius: 12px;
-}
-
-/* ARCHIVOS */
+/* CARGADOR PDF */
 
 [data-testid="stFileUploader"] {
     background: white;
@@ -286,15 +317,31 @@ with st.sidebar:
         help="Necesitas una clave API válida para generar evaluaciones."
     )
 
-    st.caption(
-        "La clave es necesaria para analizar documentos "
-        "y generar preguntas. No la publiques en GitHub."
-    )
+    api_key = api_key.strip()
 
     if api_key:
-        st.success("Clave introducida")
+
+        st.success("✓ Clave API introducida")
+
+        st.html("""
+        <div style="
+            background:#E8F5DF;
+            border:1px solid #B9D99D;
+            border-radius:12px;
+            padding:13px;
+            margin-top:8px;
+            color:#075B55;
+            font-size:13px;
+            font-weight:700;
+        ">
+            ✓ Ya puedes cargar tu documento PDF
+            y generar tu evaluación.
+        </div>
+        """)
+
     else:
-        st.warning("Falta introducir la clave API")
+
+        st.warning("🔑 Introduce tu clave API para comenzar.")
 
     st.divider()
 
@@ -370,111 +417,59 @@ if "configuracion" not in st.session_state:
 
 
 # ==========================================================
-# 6. TARJETAS INFORMATIVAS
+# 6. CARGA DIRECTA DEL DOCUMENTO PDF
 # ==========================================================
 
 st.markdown(
-    '<div class="section-title">✦ Bienvenido a EvaluaPro</div>',
+    '<div class="section-title">📄 Carga tu documento PDF</div>',
     unsafe_allow_html=True
 )
 
 st.write(
-    "Una herramienta inteligente que transforma tus documentos "
-    "educativos en evaluaciones listas para utilizar."
+    "Selecciona tu material de clase para crear "
+    "una evaluación inteligente."
 )
 
-col1, col2, col3 = st.columns(3)
+if api_key:
 
-with col1:
-    st.html("""
-    <div style="
-        background:white;
-        border:1px solid #E5EBDD;
-        border-radius:19px;
-        padding:23px;
-        min-height:165px;
-        box-shadow:0 4px 15px rgba(7,91,85,0.04);
-    ">
-        <div style="font-size:30px;">📄</div>
-        <h3 style="color:#075B55;font-size:17px;">
-            Material de clase
-        </h3>
-        <p style="color:#71817B;font-size:13px;line-height:1.6;">
-            Analiza tus documentos y utiliza su contenido
-            como fuente de conocimiento.
-        </p>
-    </div>
-    """)
+    st.success(
+        "✓ Conexión preparada. Ya puedes seleccionar tu PDF."
+    )
 
-with col2:
-    st.html("""
-    <div style="
-        background:white;
-        border:1px solid #E5EBDD;
-        border-radius:19px;
-        padding:23px;
-        min-height:165px;
-        box-shadow:0 4px 15px rgba(7,91,85,0.04);
-    ">
-        <div style="font-size:30px;">🧠</div>
-        <h3 style="color:#075B55;font-size:17px;">
-            Inteligencia artificial
-        </h3>
-        <p style="color:#71817B;font-size:13px;line-height:1.6;">
-            Genera preguntas educativas adaptadas
-            al nivel de dificultad seleccionado.
-        </p>
-    </div>
-    """)
+else:
 
-with col3:
-    st.html("""
-    <div style="
-        background:white;
-        border:1px solid #E5EBDD;
-        border-radius:19px;
-        padding:23px;
-        min-height:165px;
-        box-shadow:0 4px 15px rgba(7,91,85,0.04);
-    ">
-        <div style="font-size:30px;">📥</div>
-        <h3 style="color:#075B55;font-size:17px;">
-            Exámenes descargables
-        </h3>
-        <p style="color:#71817B;font-size:13px;line-height:1.6;">
-            Descarga evaluaciones listas para
-            utilizar con tus estudiantes.
-        </p>
-    </div>
-    """)
-
-
-# ==========================================================
-# 7. CARGA DEL PDF
-# ==========================================================
-
-st.markdown("---")
-
-st.markdown(
-    '<div class="section-title">📄 Carga tu material de clase</div>',
-    unsafe_allow_html=True
-)
-
-st.write(
-    "Sube un documento PDF con el contenido de tu clase, "
-    "unidad o tema. EvaluaPro analizará su información "
-    "para crear una evaluación personalizada."
-)
+    st.warning(
+        "🔑 Primero introduce tu clave API de OpenAI "
+        "en el menú lateral."
+    )
 
 pdf = st.file_uploader(
-    "Selecciona o arrastra tu documento PDF",
+    "Selecciona tu material de clase",
     type=["pdf"],
-    help="El documento debe contener texto seleccionable."
+    help="Sube un documento PDF con texto seleccionable."
 )
+
+if pdf is not None:
+
+    st.success(f"✓ Documento cargado: {pdf.name}")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric(
+            "Tamaño del documento",
+            f"{pdf.size / 1024:.1f} KB"
+        )
+
+    with col2:
+        st.metric(
+            "Preguntas configuradas",
+            numero_preguntas
+        )
 
 
 # ==========================================================
-# 8. EXTRAER TEXTO DEL PDF
+# 7. EXTRAER TEXTO DEL PDF
 # ==========================================================
 
 def extraer_texto(pdf_bytes):
@@ -502,7 +497,7 @@ def extraer_texto(pdf_bytes):
 
 
 # ==========================================================
-# 9. CREAR BASE DE CONOCIMIENTO RAG
+# 8. CREAR BASE DE CONOCIMIENTO RAG
 # ==========================================================
 
 def crear_base_conocimiento(texto, api_key):
@@ -533,7 +528,7 @@ def crear_base_conocimiento(texto, api_key):
 
 
 # ==========================================================
-# 10. GENERAR EVALUACIÓN CON IA
+# 9. GENERAR EVALUACIÓN CON IA
 # ==========================================================
 
 def generar_evaluacion(
@@ -762,7 +757,7 @@ INSTRUCCIONES:
 
 
 # ==========================================================
-# 11. CREAR DOCUMENTOS PDF
+# 10. CREAR DOCUMENTOS PDF
 # ==========================================================
 
 def crear_pdf(
@@ -964,7 +959,7 @@ def crear_pdf(
 
 
 # ==========================================================
-# 12. VALIDACIÓN DEL DOCUMENTO Y CONFIGURACIÓN
+# 11. CONTROL DEL DOCUMENTO Y CONFIGURACIÓN
 # ==========================================================
 
 if pdf is not None:
@@ -993,57 +988,14 @@ else:
 
 
 # ==========================================================
-# 13. INFORMACIÓN DEL DOCUMENTO
+# 12. GENERACIÓN DE LA EVALUACIÓN
 # ==========================================================
 
 st.markdown("---")
 
 st.markdown(
-    '<div class="section-title">📋 Tu material de trabajo</div>',
+    '<div class="section-title">✨ Genera tu evaluación</div>',
     unsafe_allow_html=True
-)
-
-if pdf is None:
-
-    st.info(
-        "📄 Selecciona un documento PDF para comenzar."
-    )
-
-else:
-
-    st.success(
-        f"Documento seleccionado: {pdf.name}"
-    )
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.metric(
-            "Tamaño del documento",
-            f"{pdf.size / 1024:.1f} KB"
-        )
-
-    with col2:
-        st.metric(
-            "Preguntas configuradas",
-            numero_preguntas
-        )
-
-
-# ==========================================================
-# 14. GENERACIÓN DE LA EVALUACIÓN
-# ==========================================================
-
-st.markdown("---")
-
-st.markdown(
-    '<div class="section-title">✨ Crea tu evaluación</div>',
-    unsafe_allow_html=True
-)
-
-st.write(
-    "Cuando hayas introducido tu clave API y seleccionado "
-    "el documento, podrás generar tu examen."
 )
 
 if not api_key:
@@ -1056,7 +1008,8 @@ if not api_key:
 elif pdf is None:
 
     st.info(
-        "📄 Primero debes cargar un documento PDF."
+        "📄 Carga tu documento PDF para poder generar "
+        "tu evaluación."
     )
 
 else:
@@ -1120,14 +1073,15 @@ else:
         except Exception as error:
 
             st.error(
-                "No fue posible generar la evaluación."
+                "No fue posible generar la evaluación. "
+                "Comprueba tu clave API y vuelve a intentarlo."
             )
 
             st.exception(error)
 
 
 # ==========================================================
-# 15. MOSTRAR EVALUACIÓN
+# 13. MOSTRAR EVALUACIÓN
 # ==========================================================
 
 if (
@@ -1198,7 +1152,7 @@ if (
 
 
     # ======================================================
-    # 16. DESCARGAR DOCUMENTOS
+    # 14. DESCARGAR DOCUMENTOS
     # ======================================================
 
     st.markdown("---")
@@ -1249,7 +1203,7 @@ if (
 
 
     # ======================================================
-    # 17. CONSULTAR RESPUESTAS
+    # 15. CONSULTAR RESPUESTAS
     # ======================================================
 
     with st.expander("🔍 Consultar clave de respuestas"):
@@ -1273,7 +1227,7 @@ if (
 
 
     # ======================================================
-    # 18. NUEVA EVALUACIÓN
+    # 16. NUEVA EVALUACIÓN
     # ======================================================
 
     if st.button(
@@ -1290,7 +1244,7 @@ if (
 
 
 # ==========================================================
-# 19. PIE DE PÁGINA
+# 17. PIE DE PÁGINA
 # ==========================================================
 
 st.markdown("---")
